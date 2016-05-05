@@ -13,10 +13,17 @@ bool connect()
   Serial.println();
   Serial.print("Connecting to WiFi ");
   Serial.println(WIFI_SSID);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+  int wifiAttempts = 0;
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
     Serial.print(".");
+    delay(500);
+    if (++wifiAttempts > 120) {
+      Serial.println();
+      Serial.println("WiFi not connected after 60 seconds");
+      return false;
+    }
   }
 
   Serial.println();
@@ -26,15 +33,23 @@ bool connect()
   Serial.println();
   Serial.println("Connecting to Losant");
   device.connectSecure(wifiClient, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
+
+  int losantAttempts = 0;
   while (!device.connected()) {
     if (WiFi.status() != WL_CONNECTED) {
       Serial.println();
       Serial.println("WiFi connection lost");
       return false;
     }
-    delay(500);
     Serial.print(".");
+    delay(500);
+    if (++losantAttempts > 120) {
+      Serial.println();
+      Serial.println("Losant not connected after 60 seconds");
+      return false;
+    }
   }
+
   Serial.println();
   Serial.println("Connected to Losant");
   Serial.println();
