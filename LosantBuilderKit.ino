@@ -84,14 +84,16 @@ void readButton()
   }
 }
 
-const int LED_PIN = 12;
-bool ledState = false;
+const int LED0_PIN = 0;
+const int LED1_PIN = 2;
+const int LED2_PIN = 12;
 
-void toggleLed()
+void setLed(JsonObject& p)
 {
-  Serial.println("Toggling LED");
-  ledState = !ledState;
-  digitalWrite(LED_PIN, ledState ? HIGH : LOW);
+  Serial.println("Setting LED");
+  digitalWrite(LED0_PIN, (bool)p["v"][0] ? LOW : HIGH);
+  digitalWrite(LED1_PIN, (bool)p["v"][1] ? LOW : HIGH);
+  digitalWrite(LED2_PIN, (bool)p["v"][2] ? HIGH : LOW);
 }
 
 const int TEMP_REPORT_INTERVAL = 15000;
@@ -166,8 +168,8 @@ void handleCommand(LosantCommand* cmd) {
   Serial.print("Command received: ");
   Serial.println(cmd->name);
 
-  if (strcmp(cmd->name, "toggle") == 0) {
-    toggleLed();
+  if (strcmp(cmd->name, "led") == 0) {
+    setLed(*cmd->payload);
   }
   if (strcmp(cmd->name, "pong") == 0) {
     witnessPong();
@@ -182,7 +184,12 @@ void setup()
   Serial.println();
 
   pinMode(BUTTON_PIN, INPUT);
-  pinMode(LED_PIN, OUTPUT);
+  pinMode(LED0_PIN, OUTPUT);
+  pinMode(LED1_PIN, OUTPUT);
+  pinMode(LED2_PIN, OUTPUT);
+  digitalWrite(LED0_PIN, HIGH);
+  digitalWrite(LED1_PIN, HIGH);
+  digitalWrite(LED2_PIN, LOW);
 
   device.onCommand(&handleCommand);
 }
