@@ -7,6 +7,7 @@ const int LOOP_INTERVAL = 100;
 
 WiFiClientSecure wifiClient;
 LosantDevice device(LOSANT_DEVICE_ID);
+const int CONNECTIVITY_LED_PIN = 0;
 
 bool connect()
 {
@@ -56,6 +57,7 @@ bool connect()
   Serial.println();
   Serial.println();
 
+  digitalWrite(CONNECTIVITY_LED_PIN, LOW);
   return true;
 }
 
@@ -71,6 +73,7 @@ void ensureConnected()
     needReconnect = true;
   }
   while (needReconnect) {
+    digitalWrite(CONNECTIVITY_LED_PIN, HIGH);
     needReconnect = !connect();
   }
 }
@@ -98,18 +101,6 @@ void readButton()
       buttonPressed();
     }
   }
-}
-
-const int LED0_PIN = 0;
-const int LED1_PIN = 2;
-const int LED2_PIN = 12;
-
-void setLed(JsonObject& p)
-{
-  Serial.println("Setting LED");
-  digitalWrite(LED0_PIN, (bool)p["v"][0] ? LOW : HIGH);
-  digitalWrite(LED1_PIN, (bool)p["v"][1] ? LOW : HIGH);
-  digitalWrite(LED2_PIN, (bool)p["v"][2] ? HIGH : LOW);
 }
 
 const int TEMP_REPORT_INTERVAL = 15000;
@@ -145,10 +136,7 @@ void readTemp()
 PingPong pingPong(device);
 
 void handleCommand(LosantCommand* cmd) {
-  if (strcmp(cmd->name, "led") == 0) {
-    setLed(*cmd->payload);
-  }
-  else if (strcmp(cmd->name, "pong") == 0) {
+  if (strcmp(cmd->name, "pong") == 0) {
     pingPong.handlePong(cmd);
   }
   else {
@@ -165,12 +153,8 @@ void setup()
   Serial.println();
 
   pinMode(BUTTON_PIN, INPUT);
-  pinMode(LED0_PIN, OUTPUT);
-  pinMode(LED1_PIN, OUTPUT);
-  pinMode(LED2_PIN, OUTPUT);
-  digitalWrite(LED0_PIN, HIGH);
-  digitalWrite(LED1_PIN, HIGH);
-  digitalWrite(LED2_PIN, LOW);
+  pinMode(CONNECTIVITY_LED_PIN, OUTPUT);
+  digitalWrite(CONNECTIVITY_LED_PIN, HIGH);
 
   device.onCommand(&handleCommand);
 }
