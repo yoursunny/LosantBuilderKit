@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <Losant.h>
 #include "credentials.h"
+#include "pingpong.hpp"
 
 const int LOOP_INTERVAL = 100;
 
@@ -141,53 +142,18 @@ void readTemp()
   }
 }
 
-const int PING_INTERVAL = 10000;
-const int PONG_MISS_THRESHOLD = 6;
-int pingDue = TEMP_REPORT_INTERVAL;
-bool hasPong = false;
-int pongMissed = 0;
-
-void ping()
-{
-  pingDue -= LOOP_INTERVAL;
-  if (pingDue > 0) {
-    return;
-  }
-  pingDue = PING_INTERVAL;
-
-  Serial.println("Sending ping");
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& root = jsonBuffer.createObject();
-  root["act"] = "ping";
-  device.sendState(root);
-
-  if (!hasPong) {
-    ++pongMissed;
-    Serial.print("Pong missed: ");
-    Serial.println(pongMissed);
-    if (pongMissed >= PONG_MISS_THRESHOLD) {
-      pongMissed = 0;
-      Serial.println("Too many missed pongs, disconnecting");
-      device.disconnect();
-      return;
-    }
-  }
-}
-
-void witnessPong()
-{
-  hasPong = true;
-}
+PingPong pingPong(device);
 
 void handleCommand(LosantCommand* cmd) {
-  Serial.print("Command received: ");
-  Serial.println(cmd->name);
-
   if (strcmp(cmd->name, "led") == 0) {
     setLed(*cmd->payload);
   }
-  if (strcmp(cmd->name, "pong") == 0) {
-    witnessPong();
+  else if (strcmp(cmd->name, "pong") == 0) {
+    pingPong.handlePong(cmd);
+  }
+  else {
+    Serial.print("Unknown command verb: ");
+    Serial.println(cmd->name);
   }
 }
 
@@ -216,6 +182,6 @@ void loop()
 
   readButton();
   readTemp();
-  ping();
+  pingPong.loop();
   delay(LOOP_INTERVAL);
 }
