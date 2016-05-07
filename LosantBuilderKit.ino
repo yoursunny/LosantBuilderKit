@@ -102,7 +102,7 @@ void readButton()
   }
 }
 
-Temperature temperature(device);
+Temperature temperature(device, "tempC", "tempF");
 PingPong pingPong(device);
 
 void handleCommand(LosantCommand* cmd) {

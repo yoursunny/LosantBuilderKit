@@ -1,7 +1,9 @@
 #include "temperature.hpp"
 
-Temperature::Temperature(LosantDevice& device, int reportInterval, int pin)
+Temperature::Temperature(LosantDevice& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval, int pin)
   : m_device(device)
+  , m_celsiusVar(celsiusVar)
+  , m_fahrenheitVar(fahrenheitVar)
   , m_pin(pin)
   , m_reportInterval(reportInterval)
   , m_lastReport(millis())
@@ -20,19 +22,42 @@ Temperature::loop()
     return;
   }
 
+  double tempC, tempF;
+  std::tie(tempC, tempF) = this->computeTemps();
+  this->sendReport(tempC, tempF);
+}
+
+std::pair<double, double>
+Temperature::computeTemps()
+{
   double raw = static_cast<double>(m_sum) / static_cast<double>(m_count);
   double tempC = ((raw / 1024.0 * 2.0) - 0.57) * 100.0;
-
-  Serial.print("Reporting temperature: ");
-  Serial.print(tempC);
-  Serial.println(" C");
-
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& root = jsonBuffer.createObject();
-  root["tempC"] = tempC;
-  m_device.sendState(root);
+  double tempF = tempC * 1.8 + 32;
 
   m_sum = 0;
   m_count = 0;
+
+  return std::make_pair(tempC, tempF);
+}
+
+void
+Temperature::sendReport(double tempC, double tempF)
+{
+  Serial.print("Reporting temperature: ");
+  Serial.print(tempC);
+  Serial.print(" C, ");
+  Serial.print(tempF);
+  Serial.println(" F");
+
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+  if (m_celsiusVar != nullptr) {
+    root[m_celsiusVar] = tempC;
+  }
+  if (m_fahrenheitVar != nullptr) {
+    root[m_fahrenheitVar] = tempF;
+  }
+  m_device.sendState(root);
+
   m_lastReport = millis();
 }
