@@ -2,10 +2,7 @@
 
 /**
  * \brief end-to-end Losant connectivity test
- * \param pingInterval interval between pings, in millis
- * \param pongMissThreshold how many missed pongs causes device.disconnect
  *
- * Usage:
  * 1. Losant device: create state variable `act` of string type
  * 2. Losant workflow: when device reports `{{act}}=='ping'`, send a device command 'pong'
  * 3. sketch globals: declare PingPong instance
@@ -14,6 +11,10 @@
 class PingPong
 {
 public:
+  /**
+   * \param pingInterval interval between pings, in millis
+   * \param pongMissThreshold how many missed pongs causes device.disconnect
+   */
   PingPong(LosantDevice& device, int pingInterval = 10000, int pongMissThreshold = 6);
 
   /**
