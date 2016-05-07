@@ -1,8 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <Losant.h>
 #include "credentials.h"
-#include "temperature.hpp"
-#include "pingpong.hpp"
+#include "TemperatureReading.hpp"
+#include "LosantPingPong.hpp"
 
 WiFiClientSecure wifiClient;
 LosantDevice device(LOSANT_DEVICE_ID);
@@ -107,8 +107,8 @@ void readButton()
   }
 }
 
-Temperature temperature(device, "tempC", "tempF");
-PingPong pingPong(device);
+TemperatureReading temperature(device, "tempC", "tempF");
+LosantPingPong pingPong(device);
 
 void handleCommand(LosantCommand* cmd) {
   if (strcmp(cmd->name, "pong") == 0) {

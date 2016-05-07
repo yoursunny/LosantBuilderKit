@@ -8,14 +8,14 @@
  * 3. sketch globals: declare PingPong instance
  * 4. sketch loop(): invoke PingPong::loop()
  */
-class PingPong
+class LosantPingPong
 {
 public:
   /**
    * \param pingInterval interval between pings, in millis
    * \param pongMissThreshold how many missed pongs causes device.disconnect
    */
-  PingPong(LosantDevice& device, int pingInterval = 10000, int pongMissThreshold = 6);
+  LosantPingPong(LosantDevice& device, int pingInterval = 10000, int pongMissThreshold = 6);
 
   /**
    * \brief send ping request to Losant, and reset if too many missed pongs

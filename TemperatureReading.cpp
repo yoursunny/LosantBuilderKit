@@ -1,6 +1,6 @@
-#include "temperature.hpp"
+#include "TemperatureReading.hpp"
 
-Temperature::Temperature(LosantDevice& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval, int pin)
+TemperatureReading::TemperatureReading(LosantDevice& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval, int pin)
   : m_device(device)
   , m_celsiusVar(celsiusVar)
   , m_fahrenheitVar(fahrenheitVar)
@@ -13,7 +13,7 @@ Temperature::Temperature(LosantDevice& device, const char* celsiusVar, const cha
 }
 
 void
-Temperature::loop()
+TemperatureReading::loop()
 {
   m_sum += analogRead(m_pin);
   ++m_count;
@@ -28,7 +28,7 @@ Temperature::loop()
 }
 
 std::pair<double, double>
-Temperature::computeTemps()
+TemperatureReading::computeTemps()
 {
   double raw = static_cast<double>(m_sum) / static_cast<double>(m_count);
   double tempC = ((raw / 1024.0 * 2.0) - 0.57) * 100.0;
@@ -41,7 +41,7 @@ Temperature::computeTemps()
 }
 
 void
-Temperature::sendReport(double tempC, double tempF)
+TemperatureReading::sendReport(double tempC, double tempF)
 {
   Serial.print("Reporting temperature: ");
   Serial.print(tempC);

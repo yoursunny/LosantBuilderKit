@@ -5,7 +5,7 @@
  *
  * TMP36 sensor is divided down by 2x, and connected on an analog pin.
  */
-class Temperature
+class TemperatureReading
 {
 public:
   /**
@@ -14,7 +14,7 @@ public:
    * \param reportInterval interval between reports, in millis
    * \param pin the analog pin
    */
-  Temperature(LosantDevice& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval = 15000, int pin = A0);
+  TemperatureReading(LosantDevice& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval = 15000, int pin = A0);
 
   void
   loop();

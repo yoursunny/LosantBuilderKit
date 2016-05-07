@@ -1,6 +1,6 @@
-#include "pingpong.hpp"
+#include "LosantPingPong.hpp"
 
-PingPong::PingPong(LosantDevice& device, int pingInterval, int pongMissThreshold)
+LosantPingPong::LosantPingPong(LosantDevice& device, int pingInterval, int pongMissThreshold)
   : m_device(device)
   , m_pingInterval(pingInterval)
   , m_pongMissThreshold(pongMissThreshold)
@@ -11,7 +11,7 @@ PingPong::PingPong(LosantDevice& device, int pingInterval, int pongMissThreshold
 }
 
 void
-PingPong::loop()
+LosantPingPong::loop()
 {
   if (millis() - m_lastPing < m_pingInterval) {
     return;
@@ -40,7 +40,7 @@ PingPong::loop()
 }
 
 void
-PingPong::handlePong(LosantCommand* cmd)
+LosantPingPong::handlePong(LosantCommand* cmd)
 {
   Serial.println("Pong received");
   m_hasPong = true;
