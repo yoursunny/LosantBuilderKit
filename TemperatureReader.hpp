@@ -8,9 +8,9 @@ struct TemperatureReading
 };
 
 /**
- * \brief read temperature and report to Losant
+ * \brief read temperature from TMP36 sensor
  *
- * TMP36 sensor is divided down by 2x, and connected on an analog pin.
+ * The sensor voltage is divided down by half.
  */
 class TemperatureReader
 {
@@ -19,6 +19,7 @@ public:
    * \param pin the analog pin
    * \param alpha the effect of new value in moving average
    */
+  explicit
   TemperatureReader(int pin, double alpha = 0.1);
 
   void
