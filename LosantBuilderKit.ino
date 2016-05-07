@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <Losant.h>
 #include "credentials.h"
+#include "Button.hpp"
 #include "TemperatureReader.hpp"
 #include "LosantTemperature.hpp"
 #include "LosantPingPong.hpp"
@@ -11,7 +12,8 @@ LosantDevice g_losantDevice(LOSANT_DEVICE_ID);
 // fully lit: disconnected; dim to 3%: connected
 const int CONNECTIVITY_LED_PIN = 0;
 
-bool connect()
+bool
+connect()
 {
   Serial.println();
   Serial.println();
@@ -63,7 +65,8 @@ bool connect()
   return true;
 }
 
-void ensureConnected()
+void
+ensureConnected()
 {
   bool needReconnect = false;
   if (WiFi.status() != WL_CONNECTED) {
@@ -83,29 +86,17 @@ void ensureConnected()
   }
 }
 
-const int BUTTON_PIN = 14;
-int buttonState = 0;
+Button<14> g_button;
 
-void buttonPressed()
+void
+buttonDown(int, bool, unsigned long)
 {
   Serial.println("Button pressed.");
-  Serial.println();
 
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["act"] = "button";
   g_losantDevice.sendState(root);
-}
-
-void readButton()
-{
-  int currentRead = digitalRead(BUTTON_PIN);
-  if (currentRead != buttonState) {
-    buttonState = currentRead;
-    if (buttonState) {
-      buttonPressed();
-    }
-  }
 }
 
 TemperatureReader g_temperatureReader(A0);
@@ -122,26 +113,28 @@ void handleCommand(LosantCommand* cmd) {
   }
 }
 
-void setup()
+void
+setup()
 {
   Serial.begin(115200);
   delay(2000);
 
   Serial.println();
 
-  pinMode(BUTTON_PIN, INPUT);
   pinMode(CONNECTIVITY_LED_PIN, OUTPUT);
+
+  g_button.setup();
+  g_button.onDown(&buttonDown);
 
   g_losantDevice.onCommand(&handleCommand);
 }
 
-void loop()
+void
+loop()
 {
   ensureConnected();
   g_losantDevice.loop();
-
-  readButton();
-
+  g_button.loop();
   g_temperatureReader.loop();
   g_losantTemperature.loop();
   g_losantPingPong.loop();
