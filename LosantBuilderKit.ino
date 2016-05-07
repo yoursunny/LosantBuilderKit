@@ -1,11 +1,12 @@
 #include <ESP8266WiFi.h>
 #include <Losant.h>
 #include "credentials.h"
-#include "TemperatureReading.hpp"
+#include "TemperatureReader.hpp"
+#include "LosantTemperature.hpp"
 #include "LosantPingPong.hpp"
 
-WiFiClientSecure wifiClient;
-LosantDevice device(LOSANT_DEVICE_ID);
+WiFiClientSecure g_wifiClient;
+LosantDevice g_losantDevice(LOSANT_DEVICE_ID);
 
 // fully lit: disconnected; dim to 3%: connected
 const int CONNECTIVITY_LED_PIN = 0;
@@ -35,10 +36,10 @@ bool connect()
 
   Serial.println();
   Serial.println("Connecting to Losant");
-  device.connectSecure(wifiClient, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
+  g_losantDevice.connectSecure(g_wifiClient, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
 
   int losantAttempts = 0;
-  while (!device.connected()) {
+  while (!g_losantDevice.connected()) {
     if (WiFi.status() != WL_CONNECTED) {
       Serial.println();
       Serial.println("WiFi connection lost");
@@ -69,7 +70,7 @@ void ensureConnected()
     Serial.println("WiFi disconnected");
     needReconnect = true;
   }
-  if (!device.connected()) {
+  if (!g_losantDevice.connected()) {
     Serial.println("Losant disconnected");
     needReconnect = true;
   }
@@ -93,7 +94,7 @@ void buttonPressed()
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["act"] = "button";
-  device.sendState(root);
+  g_losantDevice.sendState(root);
 }
 
 void readButton()
@@ -107,12 +108,13 @@ void readButton()
   }
 }
 
-TemperatureReading temperature(device, "tempC", "tempF");
-LosantPingPong pingPong(device);
+TemperatureReader g_temperatureReader(A0);
+LosantTemperature g_losantTemperature(g_temperatureReader, g_losantDevice, "tempC", "tempF");
+LosantPingPong g_losantPingPong(g_losantDevice);
 
 void handleCommand(LosantCommand* cmd) {
   if (strcmp(cmd->name, "pong") == 0) {
-    pingPong.handlePong(cmd);
+    g_losantPingPong.handlePong(cmd);
   }
   else {
     Serial.print("Unknown command verb: ");
@@ -130,17 +132,18 @@ void setup()
   pinMode(BUTTON_PIN, INPUT);
   pinMode(CONNECTIVITY_LED_PIN, OUTPUT);
 
-  device.onCommand(&handleCommand);
+  g_losantDevice.onCommand(&handleCommand);
 }
 
 void loop()
 {
   ensureConnected();
-  device.loop();
+  g_losantDevice.loop();
 
   readButton();
 
-  temperature.loop();
-  pingPong.loop();
+  g_temperatureReader.loop();
+  g_losantTemperature.loop();
+  g_losantPingPong.loop();
   delay(100);
 }

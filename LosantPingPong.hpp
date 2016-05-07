@@ -1,3 +1,6 @@
+#ifndef LOSANT_PING_PONG_HPP
+#define LOSANT_PING_PONG_HPP
+
 #include <Losant.h>
 
 /**
@@ -38,3 +41,5 @@ private:
   bool m_hasPong;
   int m_nMissedPongs;
 };
+
+#endif // LOSANT_PING_PONG_HPP
