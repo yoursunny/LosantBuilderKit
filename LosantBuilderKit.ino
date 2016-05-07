@@ -1,9 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <Losant.h>
 #include "credentials.h"
+#include "temperature.hpp"
 #include "pingpong.hpp"
-
-const int LOOP_INTERVAL = 100;
 
 WiFiClientSecure wifiClient;
 LosantDevice device(LOSANT_DEVICE_ID);
@@ -103,36 +102,7 @@ void readButton()
   }
 }
 
-const int TEMP_REPORT_INTERVAL = 15000;
-int tempReportDue = TEMP_REPORT_INTERVAL;
-int tempSum = 0;
-int tempCount = 0;
-
-void reportTemp(double tempC)
-{
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& root = jsonBuffer.createObject();
-  root["tempC"] = tempC;
-  device.sendState(root);
-}
-
-void readTemp()
-{
-  tempSum += analogRead(A0);
-  ++tempCount;
-  tempReportDue -= LOOP_INTERVAL;
-  if (tempReportDue <= 0) {
-    double raw = (double)tempSum / (double)tempCount;
-    double tempC = ((raw / 1024.0 * 2.0) - 0.57) * 100.0;
-    Serial.print("Reporting temperature: ");
-    Serial.print(tempC);
-    Serial.println(" C");
-    reportTemp(tempC);
-    tempSum = tempCount = 0;
-    tempReportDue = TEMP_REPORT_INTERVAL;
-  }
-}
-
+Temperature temperature(device);
 PingPong pingPong(device);
 
 void handleCommand(LosantCommand* cmd) {
@@ -165,7 +135,8 @@ void loop()
   device.loop();
 
   readButton();
-  readTemp();
+
+  temperature.loop();
   pingPong.loop();
-  delay(LOOP_INTERVAL);
+  delay(100);
 }
