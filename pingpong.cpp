@@ -4,7 +4,7 @@ PingPong::PingPong(LosantDevice& device, int pingInterval, int pongMissThreshold
   : m_device(device)
   , m_pingInterval(pingInterval)
   , m_pongMissThreshold(pongMissThreshold)
-  , m_lastPing(micros())
+  , m_lastPing(millis())
   , m_hasPong(true)
   , m_nMissedPongs(0)
 {
