@@ -24,11 +24,6 @@ public:
     , m_down(nullptr)
     , m_up(nullptr)
   {
-  }
-
-  void
-  setup()
-  {
     pinMode(PIN, INPUT);
   }
 

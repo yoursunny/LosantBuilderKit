@@ -123,7 +123,6 @@ setup()
 
   pinMode(CONNECTIVITY_LED_PIN, OUTPUT);
 
-  g_button.setup();
   g_button.onDown(&buttonDown);
 
   g_losantDevice.onCommand(&handleCommand);
