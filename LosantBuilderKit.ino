@@ -6,6 +6,8 @@
 
 WiFiClientSecure wifiClient;
 LosantDevice device(LOSANT_DEVICE_ID);
+
+// fully lit: disconnected; dim to 3%: connected
 const int CONNECTIVITY_LED_PIN = 0;
 
 bool connect()
@@ -56,7 +58,7 @@ bool connect()
   Serial.println();
   Serial.println();
 
-  digitalWrite(CONNECTIVITY_LED_PIN, LOW);
+  analogWrite(CONNECTIVITY_LED_PIN, static_cast<int>(PWMRANGE * 0.97));
   return true;
 }
 
@@ -72,7 +74,10 @@ void ensureConnected()
     needReconnect = true;
   }
   while (needReconnect) {
-    digitalWrite(CONNECTIVITY_LED_PIN, HIGH);
+    analogWrite(CONNECTIVITY_LED_PIN, 0);
+    digitalWrite(CONNECTIVITY_LED_PIN, LOW);
+    WiFi.disconnect();
+    delay(4000);
     needReconnect = !connect();
   }
 }
@@ -124,7 +129,6 @@ void setup()
 
   pinMode(BUTTON_PIN, INPUT);
   pinMode(CONNECTIVITY_LED_PIN, OUTPUT);
-  digitalWrite(CONNECTIVITY_LED_PIN, HIGH);
 
   device.onCommand(&handleCommand);
 }
