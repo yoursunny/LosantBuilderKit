@@ -9,6 +9,7 @@
 #include "LosantPingPong.hpp"
 #include "NdnFace.hpp"
 #include "NdnPingServer.hpp"
+#include "NdnPingClient.hpp"
 
 WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15000);
 LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
@@ -21,12 +22,12 @@ LosantPingPong g_losantPingPong(g_losant.getDevice());
 static uint8_t g_pktbuf[1500];
 NdnFace g_face(NDN_ROUTER_HOST, NDN_ROUTER_PORT, 6363, g_pktbuf, sizeof(g_pktbuf));
 static ndn_NameComponent g_inPingPrefixComps[8];
-static ndn::NameLite g_inPingPrefix(g_inPingPrefixComps, sizeof(g_inPingPrefixComps) / sizeof(g_inPingPrefixComps[0]));
+static ndn::NameLite g_inPingPrefix(g_inPingPrefixComps, 8);
 NdnPingServer g_pingServer(g_face, g_inPingPrefix);
-
 const int NDNPING_LED_PIN = 2;
 static ndn_NameComponent g_outPingPrefixComps[8];
-static ndn::NameLite g_outPingPrefix(g_outPingPrefixComps, sizeof(g_outPingPrefixComps) / sizeof(g_outPingPrefixComps[0]));
+static ndn::InterestLite g_outPingInterest(g_outPingPrefixComps, 8, nullptr, 0, nullptr, 0);
+NdnPingClient g_pingClient(g_face, g_outPingInterest, 30000, NDNPING_LED_PIN);
 
 void
 handleLosantCommand(LosantCommand* cmd) {
@@ -49,17 +50,7 @@ buttonDown(int, bool, unsigned long)
   //root["act"] = "button";
   //g_losant.getDevice().sendState(root);
 
-  ndn::InterestLite interest(NdnFace::s_nameComps, NDNFACE_NAMECOMPS_MAX, nullptr, 0, nullptr, 0);
-  ndn::NameLite& name = interest.getName();
-  name.set(g_outPingPrefix);
-  String seq(millis());
-  name.append(seq.c_str());
-  interest.setMustBeFresh(true);
-
-  Serial.print("Sending ndnping request ");
-  Serial.println(seq);
-  g_face.sendInterest(interest);
-  digitalWrite(NDNPING_LED_PIN, LOW);
+  g_pingClient.ping();
 }
 
 void
@@ -89,14 +80,7 @@ processInterest(const ndn::InterestLite& interest)
 void
 processData(const ndn::DataLite& data)
 {
-  const ndn::NameLite& name = data.getName();
-  if (g_outPingPrefix.match(name) && name.size() == g_outPingPrefix.size() + 1) {
-    Serial.print("Received ndnping reply ");
-    const ndn::BlobLite& seqBlob = name.get(g_outPingPrefix.size()).getValue();
-    Serial.write(seqBlob.buf(), seqBlob.size());
-    Serial.println();
-    digitalWrite(NDNPING_LED_PIN, HIGH);
-  }
+  g_pingClient.processData(data);
 }
 
 void
@@ -112,11 +96,9 @@ setup()
   pinMode(CONNECTIVITY_LED_PIN, OUTPUT);
   g_losant.getDevice().onCommand(&handleLosantCommand);
 
-  pinMode(NDNPING_LED_PIN, OUTPUT);
-  digitalWrite(NDNPING_LED_PIN, HIGH);
   ndn_parseName(g_inPingPrefix, NDN_INPING_PREFIX);
   g_pingServer.makePayload = &ndnpingMakePayload;
-  ndn_parseName(g_outPingPrefix, NDN_OUTPING_PREFIX);
+  ndn_parseName(g_outPingInterest.getName(), NDN_OUTPING_PREFIX);
   g_face.onInterest(&processInterest);
   g_face.onData(&processData);
   g_face.setHmacKey(NDN_HMAC_KEY, sizeof(NDN_HMAC_KEY));
@@ -126,7 +108,7 @@ void
 loop()
 {
   g_wifi.loop();
-  //g_losant.loop();
+  g_losant.loop();
   if (g_wifi.isConnected() && g_losant.isConnected()) {
     analogWrite(CONNECTIVITY_LED_PIN, static_cast<int>(PWMRANGE * 0.97));
   }
@@ -139,5 +121,6 @@ loop()
   g_losantTemperature.loop();
   g_losantPingPong.loop();
   g_face.loop(2);
-  delay(100);
+  g_pingClient.loop();
+  delay(10);
 }
