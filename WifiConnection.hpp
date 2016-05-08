@@ -1,8 +1,6 @@
 #ifndef WIFI_CONNECTION_HPP
 #define WIFI_CONNECTION_HPP
 
-#define WIFI_CONNECTION_DBG Serial.print
-
 #include <ESP8266WiFi.h>
 
 /**

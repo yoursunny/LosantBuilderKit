@@ -1,10 +1,13 @@
 #include "WifiConnection.hpp"
 
+#define WIFI_CONNECTION_DBG Serial.print
+
 WifiConnection::WifiConnection(const char* ssid, const char* password)
   : m_ssid(ssid)
   , m_password(password)
-  , m_isConnected(true)
+  , m_isConnected(false)
 {
+  WiFi.disconnect();
 }
 
 void

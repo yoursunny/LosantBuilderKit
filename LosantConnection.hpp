@@ -1,8 +1,6 @@
 #ifndef LOSANT_CONNECTION_HPP
 #define LOSANT_CONNECTION_HPP
 
-#define LOSANT_CONNECTION_DBG Serial.print
-
 #include <Losant.h>
 #include "WifiConnection.hpp"
 

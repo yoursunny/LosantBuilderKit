@@ -1,5 +1,7 @@
 #include "LosantConnection.hpp"
 
+#define LOSANT_CONNECTION_DBG Serial.print
+
 LosantConnection::LosantConnection(WifiConnection& wifi, const char* deviceId, const char* accessKey, const char* accessSecret)
   : m_wifi(wifi)
   , m_device(deviceId)

@@ -1,5 +1,7 @@
 #include "LosantPingPong.hpp"
 
+#define LOSANT_PINGPONG_DBG Serial.print
+
 LosantPingPong::LosantPingPong(LosantDevice& device, int pingInterval, int pongMissThreshold)
   : m_device(device)
   , m_pingInterval(pingInterval)
@@ -24,19 +26,23 @@ LosantPingPong::loop()
     return;
   }
 
-  if (!m_hasPong) {
+  if (m_hasPong) {
+    m_nMissedPongs = 0;
+  }
+  else {
     ++m_nMissedPongs;
-    Serial.print("Pong missed: ");
-    Serial.println(m_nMissedPongs);
+    LOSANT_PINGPONG_DBG("[LosantPingPong] ");
+    LOSANT_PINGPONG_DBG(m_nMissedPongs, DEC);
+    LOSANT_PINGPONG_DBG(" pong missed\n");
     if (m_nMissedPongs >= m_pongMissThreshold) {
       m_nMissedPongs = 0;
-      Serial.println("Too many missed pongs, disconnecting");
+      LOSANT_PINGPONG_DBG("[LosantPingPong] disconnecting LosantDevice due to too many missed pongs\n");
       m_device.disconnect();
       return;
     }
   }
 
-  Serial.println("Sending ping");
+  LOSANT_PINGPONG_DBG("[LosantPingPong] sending ping\n");
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["act"] = "ping";
@@ -49,6 +55,6 @@ LosantPingPong::loop()
 void
 LosantPingPong::handlePong(LosantCommand* cmd)
 {
-  Serial.println("Pong received");
+  LOSANT_PINGPONG_DBG("[LosantPingPong] pong received\n");
   m_hasPong = true;
 }
