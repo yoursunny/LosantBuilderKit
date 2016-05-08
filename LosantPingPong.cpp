@@ -17,6 +17,13 @@ LosantPingPong::loop()
     return;
   }
 
+  if (!m_device.connected()) {
+    m_lastPing = millis();
+    m_hasPong = true;
+    m_nMissedPongs = 0;
+    return;
+  }
+
   if (!m_hasPong) {
     ++m_nMissedPongs;
     Serial.print("Pong missed: ");

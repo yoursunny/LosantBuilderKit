@@ -13,7 +13,7 @@ LosantTemperature::LosantTemperature(TemperatureReader& reader, LosantDevice& de
 void
 LosantTemperature::loop()
 {
-  if (millis() - m_lastReport < m_reportInterval) {
+  if (!m_device.connected() || millis() - m_lastReport < m_reportInterval) {
     return;
   }
 
