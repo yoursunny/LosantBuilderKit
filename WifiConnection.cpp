@@ -2,10 +2,13 @@
 
 #define WIFI_CONNECTION_DBG Serial.print
 
-WifiConnection::WifiConnection(const char* ssid, const char* password)
-  : m_ssid(ssid)
-  , m_password(password)
-  , m_isConnected(false)
+WifiConnection::WifiConnection(const WifiCredential* credentials, size_t nCredentials, int connectTimeout)
+  : m_credentials(credentials)
+  , m_nCredentials(nCredentials)
+  , m_credentialIndex(0)
+  , m_wasConnected(true)
+  , m_connectTimeout(connectTimeout)
+  , m_lastChangeNetwork(millis())
 {
   WiFi.disconnect();
 }
@@ -14,10 +17,10 @@ void
 WifiConnection::loop()
 {
   if (this->isConnected()) {
-    if (!m_isConnected) {
-      m_isConnected = true;
+    if (!m_wasConnected) {
+      m_wasConnected = true;
       WIFI_CONNECTION_DBG("[WifiConnection] connected to ");
-      WIFI_CONNECTION_DBG(m_ssid);
+      WIFI_CONNECTION_DBG(WiFi.SSID());
       WIFI_CONNECTION_DBG(", ");
       WIFI_CONNECTION_DBG(WiFi.localIP());
       WIFI_CONNECTION_DBG("/");
@@ -28,20 +31,35 @@ WifiConnection::loop()
     }
   }
   else {
-    if (m_isConnected) {
-      m_isConnected = false;
+    if (m_wasConnected) {
+      m_wasConnected = false;
       WIFI_CONNECTION_DBG("[WifiConnection] connecting to ");
-      WIFI_CONNECTION_DBG(m_ssid);
+      WIFI_CONNECTION_DBG(m_credentials[m_credentialIndex].first);
       WIFI_CONNECTION_DBG("\n");
     }
+    else if (m_connectTimeout > 0 && millis() - m_lastChangeNetwork > m_connectTimeout) {
+      this->changeNetwork();
+    }
 
-    if (m_password != nullptr) {
-      WiFi.begin(m_ssid, m_password);
+    if (m_credentials[m_credentialIndex].second == nullptr) {
+      WiFi.begin(m_credentials[m_credentialIndex].first);
     }
     else {
-      WiFi.begin(m_ssid);
+      WiFi.begin(m_credentials[m_credentialIndex].first, m_credentials[m_credentialIndex].second);
     }
   }
+}
+
+void
+WifiConnection::changeNetwork()
+{
+  if (++m_credentialIndex >= m_nCredentials) {
+    m_credentialIndex = 0;
+  }
+  WiFi.disconnect();
+  m_wasConnected = true;
+  WIFI_CONNECTION_DBG("[WifiConnection] changing network\n");
+  m_lastChangeNetwork = millis();
 }
 
 bool
