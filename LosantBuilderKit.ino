@@ -11,7 +11,7 @@
 WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15000);
 LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
 const int CONNECTIVITY_LED_PIN = 0; // fully lit: disconnected; dim to 3%: connected
-Button<14> g_button;
+Button<14, ButtonMode::PullUp> g_button;
 TemperatureReader g_temperatureReader(A0);
 LosantTemperature g_losantTemperature(g_temperatureReader, g_losant.getDevice(), "tempC", "tempF");
 LosantPingPong g_losantPingPong(g_losant.getDevice());

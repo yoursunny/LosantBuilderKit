@@ -12,9 +12,23 @@
 typedef void (*ButtonCallback)(int, bool, unsigned long);
 
 /**
+ * \brief how the button is wired
+ */
+enum class ButtonMode {
+  /**
+   * \brief input pin is externally pulled down when button is released, and held high when button is pressed
+   */
+  Normal,
+  /**
+   * \brief input pin is internally pulled up when button is released, and held low when button is pressed
+   */
+  PullUp
+};
+
+/**
  * \brief detect button state
  */
-template<int PIN>
+template<int PIN, ButtonMode MODE>
 class Button
 {
 public:
@@ -24,7 +38,13 @@ public:
     , m_down(nullptr)
     , m_up(nullptr)
   {
-    pinMode(PIN, INPUT);
+    pinMode(PIN, MODE == ButtonMode::PullUp ? INPUT_PULLUP : INPUT);
+  }
+
+  bool
+  isDown() const
+  {
+    return this->isDown(digitalRead(PIN));
   }
 
   void
@@ -50,7 +70,7 @@ public:
     unsigned long now = millis();
     unsigned long sinceLastChange = now - m_lastChange;
 
-    if (state) {
+    if (this->isDown(state)) {
       if (m_down != nullptr) {
         m_down(PIN, true, sinceLastChange);
       }
@@ -62,6 +82,13 @@ public:
     }
     m_state = state;
     m_lastChange = now;
+  }
+
+private:
+  bool
+  isDown(int state) const
+  {
+    return MODE == ButtonMode::PullUp ? !state : !!state;
   }
 
 private:
