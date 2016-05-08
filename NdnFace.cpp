@@ -38,14 +38,18 @@ NdnFace::setHmacKey(const uint8_t* hmacKey, size_t hmacKeySize)
 }
 
 void
-NdnFace::loop()
+NdnFace::loop(int maxPackets)
 {
+  int packetLimit = maxPackets;
   while (m_udp.parsePacket() > 0) {
     int len = m_udp.read(m_inBuf, m_inBufSize);
     if (len <= 0) {
       return;
     }
     this->processPacket(m_inBuf, len);
+    if (--packetLimit == 0) {
+      return;
+    }
     yield();
   }
 }

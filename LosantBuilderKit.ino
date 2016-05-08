@@ -126,7 +126,7 @@ void
 loop()
 {
   g_wifi.loop();
-  g_losant.loop();
+  //g_losant.loop();
   if (g_wifi.isConnected() && g_losant.isConnected()) {
     analogWrite(CONNECTIVITY_LED_PIN, static_cast<int>(PWMRANGE * 0.97));
   }
@@ -138,6 +138,6 @@ loop()
   g_temperatureReader.loop();
   g_losantTemperature.loop();
   g_losantPingPong.loop();
-  g_face.loop();
-  delay(10);
+  g_face.loop(2);
+  delay(100);
 }

@@ -42,7 +42,7 @@ public:
   setHmacKey(const uint8_t* hmacKey, size_t hmacKeySize);
 
   void
-  loop();
+  loop(int maxPackets = -1);
 
   void
   sendInterest(ndn::InterestLite& interest);
