@@ -20,13 +20,14 @@ NdnPingServer::processInterest(const ndn::InterestLite& interest)
   data.getName().set(interest.getName());
   NDNPINGSERVER_DBG("processing request");
 
-  String payload;
+  char payloadBuf[256];
+  PString payload(payloadBuf, sizeof(payloadBuf));
   if (this->makePayload == nullptr) {
-    payload += "OK";
+    payload << "OK";
   }
   else {
     this->makePayload(payload);
   }
-  data.setContent(ndn::BlobLite(reinterpret_cast<const uint8_t*>(payload.c_str()), payload.length()));
+  data.setContent(ndn::BlobLite(reinterpret_cast<const uint8_t*>(payloadBuf), payload.length()));
   m_face.sendData(data);
 }

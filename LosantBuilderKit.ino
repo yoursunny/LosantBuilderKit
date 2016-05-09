@@ -1,5 +1,5 @@
 #include <ESP8266WiFi.h>
-#include <Losant.h>
+#include <Streaming.h>
 #include "credentials.hpp"
 #include "WifiConnection.hpp"
 #include "LosantConnection.hpp"
@@ -54,21 +54,12 @@ buttonDown(int, bool, unsigned long)
 }
 
 void
-ndnpingMakePayload(String& payload)
+ndnpingMakePayload(PString& payload)
 {
   TemperatureReading reading = g_temperatureReader.getMovingAverage();
-  payload.reserve(256);
-  payload += "yoursunny.com temperature sensor\n";
-  payload += reading.celsius;
-  payload += "C ";
-  payload += reading.fahrenheit;
-  payload += "F\n";
-  payload += WiFi.SSID();
-  payload += " ";
-  payload += String(WiFi.localIP(), HEX);
-  payload += " ";
-  payload += millis();
-  payload += "\n";
+  payload << "yoursunny.com temperature sensor\n"
+          << reading.celsius << "C " << reading.fahrenheit << "F\n"
+          << WiFi.SSID() << " " << WiFi.localIP() << " " << millis() << "\n";
 }
 
 void

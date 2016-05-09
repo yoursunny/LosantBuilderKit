@@ -2,11 +2,12 @@
 #define NDN_PING_SERVER_HPP
 
 #include "NdnFace.hpp"
+#include <PString.h>
 
 class NdnPingServer
 {
 public:
-  typedef void (*MakePayload)(String&);
+  typedef void (*MakePayload)(PString&);
 
   NdnPingServer(NdnFace& face, const ndn::NameLite& prefix);
 
