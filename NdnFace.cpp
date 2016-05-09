@@ -46,7 +46,12 @@ NdnFace::loop(int maxPackets)
     if (len <= 0) {
       return;
     }
+    unsigned long t1 = micros();
     this->processPacket(m_inBuf, len);
+    unsigned long t2 = micros();
+    NDNFACE_DBG("[NdnFace] packet processed in ");
+    NDNFACE_DBG(t2 - t1, DEC);
+    NDNFACE_DBG("us\n");
     if (--packetLimit == 0) {
       return;
     }
