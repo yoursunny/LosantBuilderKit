@@ -1,7 +1,7 @@
 #include "NdnPingServer.hpp"
-#include <Arduino.h>
+#include "logger.hpp"
 
-#define NDNPINGSERVER_DBG Serial.print
+#define NDNPINGSERVER_DBG(...) DBG(NdnPingServer, __VA_ARGS__)
 
 NdnPingServer::NdnPingServer(NdnFace& face, const ndn::NameLite& prefix)
   : m_face(face)
@@ -18,7 +18,7 @@ NdnPingServer::processInterest(const ndn::InterestLite& interest)
   static ndn_NameComponent nameComps[8];
   ndn::DataLite data(nameComps, 8, nullptr, 0);
   data.getName().set(interest.getName());
-  NDNPINGSERVER_DBG("[NdnPingServer] process Interest\n");
+  NDNPINGSERVER_DBG("processing request");
 
   String payload;
   if (this->makePayload == nullptr) {

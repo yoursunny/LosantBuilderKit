@@ -1,6 +1,7 @@
 #include "LosantConnection.hpp"
+#include "logger.hpp"
 
-#define LOSANT_CONNECTION_DBG Serial.print
+#define LOSANT_CONNECTION_DBG(...) DBG(LosantConnection, __VA_ARGS__)
 
 LosantConnection::LosantConnection(WifiConnection& wifi, const char* deviceId, const char* accessKey, const char* accessSecret)
   : m_wifi(wifi)
@@ -19,7 +20,7 @@ LosantConnection::loop()
 
   if (!m_wifi.isConnected()) {
     if (this->isConnected()) {
-      LOSANT_CONNECTION_DBG("[LosantConnection] disconnecting due to lost wifi connection\n");
+      LOSANT_CONNECTION_DBG("disconnecting due to lost wifi connection");
       m_device.disconnect();
     }
     m_isConnecting = false;
@@ -29,16 +30,14 @@ LosantConnection::loop()
   if (this->isConnected()) {
     if (m_isConnecting) {
       m_isConnecting = false;
-      LOSANT_CONNECTION_DBG("[LosantConnection] connected in ");
-      LOSANT_CONNECTION_DBG(millis() - m_lastRetry, DEC);
-      LOSANT_CONNECTION_DBG("ms\n");
+      LOSANT_CONNECTION_DBG("connected in " << _DEC(millis() - m_lastRetry) << "ms");
     }
   }
   else {
     if (m_isConnecting && millis() - m_lastRetry < RETRY_INTERVAL) {
       return;
     }
-    LOSANT_CONNECTION_DBG("[LosantConnection] connecting\n");
+    LOSANT_CONNECTION_DBG("connecting as " << m_device.getId());
     m_device.connectSecure(m_client, m_accessKey, m_accessSecret);
     m_isConnecting = true;
     m_lastRetry = millis();
@@ -50,4 +49,3 @@ LosantConnection::isConnected() const
 {
   return const_cast<LosantDevice&>(m_device).connected();
 }
-

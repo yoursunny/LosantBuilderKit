@@ -1,7 +1,8 @@
 #include "NdnPingClient.hpp"
 #include <Arduino.h>
+#include "logger.hpp"
 
-#define NDNPINGCLIENT_DBG Serial.print
+#define NDNPINGCLIENT_DBG(...) DBG(NdnPingClient, __VA_ARGS__)
 
 NdnPingClient::NdnPingClient(NdnFace& face, ndn::InterestLite& interest, int pingInterval, int led)
   : m_face(face)
@@ -34,9 +35,7 @@ NdnPingClient::processData(const ndn::DataLite& data)
     return false;
   }
   m_isPending = false;
-  NDNPINGCLIENT_DBG("[NdnPingClient] received reply rtt=");
-  NDNPINGCLIENT_DBG(millis() - m_lastPing);
-  NDNPINGCLIENT_DBG("ms\n");
+  NDNPINGCLIENT_DBG("received reply rtt=" << _DEC(millis() - m_lastPing) << "ms");
   if (m_led >= 0) {
     digitalWrite(m_led, HIGH);
   }
@@ -47,7 +46,7 @@ bool
 NdnPingClient::ping()
 {
   if (m_isPending) {
-    NDNPINGCLIENT_DBG("[NdnPingClient] last ping timed out\n");
+    NDNPINGCLIENT_DBG("last ping timed out");
   }
 
   ndn::NameLite& name = m_interest.getName();
@@ -63,9 +62,7 @@ NdnPingClient::ping()
   seq = static_cast<uint32_t>(seq);
   name.appendSequenceNumber(seq, m_seqBuf, sizeof(m_seqBuf));
 
-  NDNPINGCLIENT_DBG("[NdnPingClient] sending ping seq=");
-  NDNPINGCLIENT_DBG(static_cast<uint32_t>(seq), HEX);
-  NDNPINGCLIENT_DBG("\n");
+  NDNPINGCLIENT_DBG("sending ping seq=" << _HEX(static_cast<uint32_t>(seq)));
   m_face.sendInterest(m_interest);
 
   m_isPending = true;

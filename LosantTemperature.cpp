@@ -1,6 +1,7 @@
 #include "LosantTemperature.hpp"
+#include "logger.hpp"
 
-#define LOSANT_TEMPERATURE_DBG Serial.print
+#define LOSANT_TEMPERATURE_DBG(...) DBG(LosantTemperature, __VA_ARGS__)
 
 LosantTemperature::LosantTemperature(TemperatureReader& reader, LosantDevice& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval)
   : m_reader(reader)
@@ -20,12 +21,7 @@ LosantTemperature::loop()
   }
 
   TemperatureReading reading = m_reader.getMovingAverage();
-
-  LOSANT_TEMPERATURE_DBG("[LosantTemperature] reporting ");
-  LOSANT_TEMPERATURE_DBG(reading.celsius);
-  LOSANT_TEMPERATURE_DBG("C, ");
-  LOSANT_TEMPERATURE_DBG(reading.fahrenheit);
-  LOSANT_TEMPERATURE_DBG("F\n");
+  LOSANT_TEMPERATURE_DBG("reporting " << reading.celsius << "C, " << reading.fahrenheit << "F");
 
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();

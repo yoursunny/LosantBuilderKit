@@ -1,6 +1,7 @@
 #include "WifiConnection.hpp"
+#include "logger.hpp"
 
-#define WIFI_CONNECTION_DBG Serial.print
+#define WIFI_CONNECTION_DBG(...) DBG(WifiConnection, __VA_ARGS__)
 
 WifiConnection::WifiConnection(const WifiCredential* credentials, size_t nCredentials, int connectTimeout)
   : m_credentials(credentials)
@@ -19,23 +20,13 @@ WifiConnection::loop()
   if (this->isConnected()) {
     if (!m_wasConnected) {
       m_wasConnected = true;
-      WIFI_CONNECTION_DBG("[WifiConnection] connected to ");
-      WIFI_CONNECTION_DBG(WiFi.SSID());
-      WIFI_CONNECTION_DBG(", ");
-      WIFI_CONNECTION_DBG(WiFi.localIP());
-      WIFI_CONNECTION_DBG("/");
-      WIFI_CONNECTION_DBG(WiFi.subnetMask());
-      WIFI_CONNECTION_DBG("/");
-      WIFI_CONNECTION_DBG(WiFi.gatewayIP());
-      WIFI_CONNECTION_DBG("\n");
+      WIFI_CONNECTION_DBG("connected to " << WiFi.SSID() << ", " << WiFi.localIP() << "/" << WiFi.subnetMask() << "/" << WiFi.gatewayIP());
     }
   }
   else {
     if (m_wasConnected) {
       m_wasConnected = false;
-      WIFI_CONNECTION_DBG("[WifiConnection] connecting to ");
-      WIFI_CONNECTION_DBG(m_credentials[m_credentialIndex].first);
-      WIFI_CONNECTION_DBG("\n");
+      WIFI_CONNECTION_DBG("connecting to " << m_credentials[m_credentialIndex].first);
     }
     else if (m_connectTimeout > 0 && millis() - m_lastChangeNetwork > m_connectTimeout) {
       this->changeNetwork();
@@ -58,7 +49,7 @@ WifiConnection::changeNetwork()
   }
   WiFi.disconnect();
   m_wasConnected = true;
-  WIFI_CONNECTION_DBG("[WifiConnection] changing network\n");
+  WIFI_CONNECTION_DBG("changing network");
   m_lastChangeNetwork = millis();
 }
 

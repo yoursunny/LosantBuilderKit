@@ -1,7 +1,7 @@
 #include "NdnFace.hpp"
-#include <Arduino.h>
+#include "logger.hpp"
 
-#define NDNFACE_DBG Serial.print
+#define NDNFACE_DBG(...) DBG(NdnFace, __VA_ARGS__)
 
 void
 ndn_parseName(ndn::NameLite& name, char* uri)
@@ -49,9 +49,7 @@ NdnFace::loop(int maxPackets)
     unsigned long t1 = micros();
     this->processPacket(m_inBuf, len);
     unsigned long t2 = micros();
-    NDNFACE_DBG("[NdnFace] packet processed in ");
-    NDNFACE_DBG(t2 - t1, DEC);
-    NDNFACE_DBG("us\n");
+    NDNFACE_DBG("packet processed in " << _DEC(t2 - t1) << "us");
     if (--packetLimit == 0) {
       return;
     }
@@ -65,16 +63,14 @@ NdnFace::processPacket(const uint8_t* pkt, size_t len)
   switch (pkt[0]) {
     case ndn_Tlv_Interest: {
       if (m_interestHandler == nullptr) {
-        NDNFACE_DBG("[NdnFace] received Interest, no handler\n");
+        NDNFACE_DBG("received Interest, no handler");
         return;
       }
       ndn::InterestLite interest(s_nameComps, NDNFACE_NAMECOMPS_MAX, s_excludeEntries, NDNFACE_EXCLUDE_MAX, s_keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
       size_t signedBegin, signedEnd;
       ndn_Error error = ndn::Tlv0_1_1WireFormatLite::decodeInterest(interest, pkt, len, &signedBegin, &signedEnd);
       if (error) {
-        NDNFACE_DBG("[NdnFace] received Interest decoding error: ");
-        NDNFACE_DBG(error, DEC);
-        NDNFACE_DBG("\n");
+        NDNFACE_DBG("received Interest decoding error: " << _DEC(error));
         return;
       }
       m_interestHandler(interest);
@@ -82,25 +78,21 @@ NdnFace::processPacket(const uint8_t* pkt, size_t len)
     }
     case ndn_Tlv_Data: {
       if (m_dataHandler == nullptr) {
-        NDNFACE_DBG("[NdnFace] received Data, no handler\n");
+        NDNFACE_DBG("received Data, no handler");
         return;
       }
       ndn::DataLite data(s_nameComps, NDNFACE_NAMECOMPS_MAX, s_keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
       size_t signedBegin, signedEnd;
       ndn_Error error = ndn::Tlv0_1_1WireFormatLite::decodeData(data, pkt, len, &signedBegin, &signedEnd);
       if (error) {
-        NDNFACE_DBG("[NdnFace] received Data decoding error: ");
-        NDNFACE_DBG(error, DEC);
-        NDNFACE_DBG("\n");
+        NDNFACE_DBG("received Data decoding error: " << _DEC(error));
         return;
       }
       m_dataHandler(data);
       break;
     }
     default: {
-      NDNFACE_DBG("[NdnFace] received unknown TLV-TYPE: 0x");
-      NDNFACE_DBG(pkt[0], HEX);
-      NDNFACE_DBG("\n");
+      NDNFACE_DBG("received unknown TLV-TYPE: 0x" << _HEX(pkt[0]));
       break;
     }
   }
@@ -114,9 +106,7 @@ NdnFace::sendInterest(ndn::InterestLite& interest)
   size_t signedBegin, signedEnd, len;
   ndn_Error error = ndn::Tlv0_1_1WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, output, &len);
   if (error) {
-    NDNFACE_DBG("[NdnFace] send Interest encoding error: ");
-    NDNFACE_DBG(error, DEC);
-    NDNFACE_DBG("\n");
+    NDNFACE_DBG("send Interest encoding error: " << _DEC(error));
     return;
   }
 
@@ -129,7 +119,7 @@ void
 NdnFace::sendData(ndn::DataLite& data)
 {
   if (m_hmacKey == nullptr) {
-    NDNFACE_DBG("[NdnFace] cannot send Data: HMAC key is unset");
+    NDNFACE_DBG("cannot send Data: HMAC key is unset");
     return;
   }
   ndn::SignatureLite& signature = data.getSignature();
@@ -142,9 +132,7 @@ NdnFace::sendData(ndn::DataLite& data)
   size_t signedBegin, signedEnd, len;
   ndn_Error error = ndn::Tlv0_1_1WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
   if (error) {
-    NDNFACE_DBG("[NdnFace] send Data encoding error: ");
-    NDNFACE_DBG(error, DEC);
-    NDNFACE_DBG("\n");
+    NDNFACE_DBG("send Data encoding error: " << _DEC(error));
     return;
   }
 
@@ -153,9 +141,7 @@ NdnFace::sendData(ndn::DataLite& data)
   data.getSignature().setSignature(ndn::BlobLite(signatureValue, ndn_SHA256_DIGEST_SIZE));
   error = ndn::Tlv0_1_1WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
   if (error) {
-    NDNFACE_DBG("[NdnFace] send Data encoding error: ");
-    NDNFACE_DBG(error, DEC);
-    NDNFACE_DBG("\n");
+    NDNFACE_DBG("send Data encoding error: " << _DEC(error));
     return;
   }
 
