@@ -17,7 +17,7 @@ const int CONNECTIVITY_LED_PIN = 0; // fully lit: disconnected; dim to 3%: conne
 Button<14, ButtonMode::PullUp> g_button;
 TemperatureReader g_temperatureReader(A0);
 LosantTemperature g_losantTemperature(g_temperatureReader, g_losant.getDevice(), "tempC", "tempF");
-LosantPingPong g_losantPingPong(g_losant.getDevice());
+LosantPingPong g_losantPingPong(g_losant.getDevice(), 20000, 4);
 
 static uint8_t g_pktbuf[1500];
 NdnFace g_face(NDN_ROUTER_HOST, NDN_ROUTER_PORT, 6363, g_pktbuf, sizeof(g_pktbuf));
