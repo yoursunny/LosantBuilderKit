@@ -42,6 +42,10 @@ NdnFace::loop(int maxPackets)
 {
   int packetLimit = maxPackets;
   while (m_udp.parsePacket() > 0) {
+    if (--packetLimit <= 0) {
+      yield();
+      continue;
+    }
     int len = m_udp.read(m_inBuf, m_inBufSize);
     if (len <= 0) {
       return;
@@ -50,10 +54,10 @@ NdnFace::loop(int maxPackets)
     this->processPacket(m_inBuf, len);
     unsigned long t2 = micros();
     NDNFACE_DBG("packet processed in " << _DEC(t2 - t1) << "us");
-    if (--packetLimit == 0) {
-      return;
-    }
     yield();
+  }
+  if (packetLimit < 0) {
+    NDNFACE_DBG(_DEC(-packetLimit) << " packets discarded");
   }
 }
 
