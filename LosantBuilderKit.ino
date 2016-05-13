@@ -12,13 +12,13 @@
 #include "NdnPingClient.hpp"
 #include "NdnPrefixRegistration.hpp"
 
-WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15000);
+WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15329);
 LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
 const int CONNECTIVITY_LED_PIN = 0; // fully lit: disconnected; dim to 3%: connected
 Button<14, ButtonMode::PullUp> g_button;
 TemperatureReader g_temperatureReader(A0);
-LosantTemperature g_losantTemperature(g_temperatureReader, g_losant.getDevice(), "tempC", "tempF");
-LosantPingPong g_losantPingPong(g_losant.getDevice(), 20000, 4);
+LosantTemperature g_losantTemperature(g_temperatureReader, g_losant.getDevice(), "tempC", "tempF", 17088);
+LosantPingPong g_losantPingPong(g_losant.getDevice(), 23998, 4);
 
 static uint8_t g_pktbuf[1500];
 NdnFace g_face(NDN_ROUTER_HOST, NDN_ROUTER_PORT, 6363, g_pktbuf, sizeof(g_pktbuf));
@@ -28,8 +28,8 @@ NdnPingServer g_pingServer(g_face, g_inPingPrefix);
 const int NDNPING_LED_PIN = 2;
 static ndn_NameComponent g_outPingPrefixComps[8];
 static ndn::InterestLite g_outPingInterest(g_outPingPrefixComps, 8, nullptr, 0, nullptr, 0);
-NdnPingClient g_pingClient(g_face, g_outPingInterest, 30000, NDNPING_LED_PIN);
-NdnPrefixRegistration g_prefixReg(g_face, NDNPREFIXREG_HTTPHOST, NDNPREFIXREG_HTTPPORT, NDNPREFIXREG_HTTPURI);
+NdnPingClient g_pingClient(g_face, g_outPingInterest, 29696, NDNPING_LED_PIN);
+NdnPrefixRegistration g_prefixReg(g_face, NDNPREFIXREG_HTTPHOST, NDNPREFIXREG_HTTPPORT, NDNPREFIXREG_HTTPURI, 305112, 62983);
 
 void
 handleLosantCommand(LosantCommand* cmd) {
