@@ -103,6 +103,14 @@ NdnFace::processPacket(const uint8_t* pkt, size_t len)
 }
 
 void
+NdnFace::sendPacket(const uint8_t* pkt, size_t pktSize)
+{
+  m_udp.beginPacket(m_routerHost, m_routerPort);
+  m_udp.write(pkt, pktSize);
+  m_udp.endPacket();
+}
+
+void
 NdnFace::sendInterest(ndn::InterestLite& interest)
 {
   uint8_t outBuf[NDNFACE_OUTBUF_SIZE];
@@ -114,9 +122,7 @@ NdnFace::sendInterest(ndn::InterestLite& interest)
     return;
   }
 
-  m_udp.beginPacket(m_routerHost, m_routerPort);
-  m_udp.write(outBuf, len);
-  m_udp.endPacket();
+  this->sendPacket(outBuf, len);
 }
 
 void
@@ -149,7 +155,5 @@ NdnFace::sendData(ndn::DataLite& data)
     return;
   }
 
-  m_udp.beginPacket(m_routerHost, m_routerPort);
-  m_udp.write(outBuf, len);
-  m_udp.endPacket();
+  this->sendPacket(outBuf, len);
 }

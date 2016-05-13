@@ -10,6 +10,7 @@
 #include "NdnFace.hpp"
 #include "NdnPingServer.hpp"
 #include "NdnPingClient.hpp"
+#include "NdnPrefixRegistration.hpp"
 
 WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15000);
 LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
@@ -28,6 +29,7 @@ const int NDNPING_LED_PIN = 2;
 static ndn_NameComponent g_outPingPrefixComps[8];
 static ndn::InterestLite g_outPingInterest(g_outPingPrefixComps, 8, nullptr, 0, nullptr, 0);
 NdnPingClient g_pingClient(g_face, g_outPingInterest, 30000, NDNPING_LED_PIN);
+NdnPrefixRegistration g_prefixReg(g_face, NDNPREFIXREG_HTTPHOST, NDNPREFIXREG_HTTPPORT, NDNPREFIXREG_HTTPURI);
 
 void
 handleLosantCommand(LosantCommand* cmd) {
@@ -71,7 +73,8 @@ processInterest(const ndn::InterestLite& interest)
 void
 processData(const ndn::DataLite& data)
 {
-  g_pingClient.processData(data);
+  g_pingClient.processData(data) ||
+  g_prefixReg.processData(data);
 }
 
 void
@@ -113,5 +116,6 @@ loop()
   g_losantPingPong.loop();
   g_face.loop(2);
   g_pingClient.loop();
+  g_prefixReg.loop();
   delay(10);
 }

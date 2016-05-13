@@ -18,7 +18,7 @@ typedef void (*NdnDataCallback)(const ndn::DataLite& data);
 
 #define NDNFACE_NAMECOMPS_MAX 16
 #define NDNFACE_EXCLUDE_MAX 4
-#define NDNFACE_KEYNAMECOMPS_MAX 0
+#define NDNFACE_KEYNAMECOMPS_MAX 8
 #define NDNFACE_OUTBUF_SIZE 1500
 
 class NdnFace
@@ -43,6 +43,9 @@ public:
 
   void
   loop(int maxPackets = -1);
+
+  void
+  sendPacket(const uint8_t* pkt, size_t pktSize);
 
   void
   sendInterest(ndn::InterestLite& interest);

@@ -21,4 +21,8 @@ const uint8_t NDN_HMAC_KEY[] = {
 char* NDN_OUTPING_PREFIX = "/example/ping";
 char* NDN_INPING_PREFIX = "/example/user/temperature-sensor/ping";
 
+const char* NDNPREFIXREG_HTTPHOST = "example.com";
+const uint16_t NDNPREFIXREG_HTTPPORT = 8266;
+const char* NDNPREFIXREG_HTTPURI = "/ndn-prefix-reg.php?i=";
+
 #endif // CREDENTIALS_HPP
