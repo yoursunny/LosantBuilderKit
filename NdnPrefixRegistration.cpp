@@ -5,18 +5,20 @@
 
 #define NDNPREFIXREG_DBG(...) DBG(NdnPrefixRegistration, __VA_ARGS__)
 
-NdnPrefixRegistration::NdnPrefixRegistration(NdnFace& face, const char* httpHost, uint16_t httpPort, const char* httpUri, int registerInterval)
+NdnPrefixRegistration::NdnPrefixRegistration(NdnFace& face, const char* httpHost, uint16_t httpPort, const char* httpUri, int registerInterval, int retryInterval)
   : m_httpHost(httpHost)
   , m_httpPort(httpPort)
   , m_httpUri(httpUri)
   , m_face(face)
   , m_registerInterval(registerInterval)
+  , m_retryInterval(retryInterval)
   , m_lastRegister(millis())
-  , m_step(-1)
+  , m_step(STEP_FAIL)
   , m_state(State::NONE)
   , m_payload(nullptr)
   , m_hasMore(false)
 {
+  m_tcp.setRxTimeout(8000);
   m_tcp.onConnect(&NdnPrefixRegistration::tcpConnectH, this);
   m_tcp.onData(&NdnPrefixRegistration::tcpDataH, this);
   m_tcp.onDisconnect(&NdnPrefixRegistration::tcpDisconnectH, this);
@@ -32,7 +34,8 @@ NdnPrefixRegistration::~NdnPrefixRegistration()
 void
 NdnPrefixRegistration::loop()
 {
-  if (m_step < 0 && millis() - m_lastRegister < m_registerInterval) {
+  if ((m_step == STEP_OK && millis() - m_lastRegister < m_registerInterval) ||
+      (m_step == STEP_FAIL && millis() - m_lastRegister < m_retryInterval)) {
     return;
   }
 
@@ -42,8 +45,8 @@ NdnPrefixRegistration::loop()
   }
 
   if (m_state == State::FAIL) {
-    m_tcp.close(true);
-    m_step = -1;
+    m_tcp.abort();
+    m_step = STEP_FAIL;
     m_state = State::NONE;
     m_lastRegister = millis();
     return;
@@ -64,7 +67,7 @@ NdnPrefixRegistration::loop()
       m_tcp.connect(m_httpHost, m_httpPort);
     }
     else {
-      m_step = -1;
+      m_step = STEP_OK;
       m_state = State::NONE;
     }
   }
@@ -142,7 +145,6 @@ void
 NdnPrefixRegistration::parseHttpHeader()
 {
   m_httpHeader[m_pos] = '\0';
-  NDNPREFIXREG_DBG("Received HTTP header " << m_httpHeader);
 
   if (m_pos == 0) {
     if (m_payloadLen > 0) {
@@ -167,6 +169,7 @@ NdnPrefixRegistration::parseHttpHeader()
     m_payloadLen = atoi(m_httpHeader + 16);
   }
   else if (strcmp(m_httpHeader, "X-Has-More: yes") == 0) {
+    NDNPREFIXREG_DBG("HTTP has-more");
     m_hasMore = true;
   }
 }
