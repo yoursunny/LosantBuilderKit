@@ -1,4 +1,5 @@
 #include "NdnFace.hpp"
+#include <ESP8266WiFi.h>
 #include "logger.hpp"
 
 #define NDNFACE_DBG(...) DBG(NdnFace, __VA_ARGS__)
@@ -20,6 +21,7 @@ ndn_NameComponent NdnFace::s_keyNameComps[NDNFACE_KEYNAMECOMPS_MAX];
 
 NdnFace::NdnFace(const char* routerHost, uint16_t routerPort, uint16_t localPort, void* inBuf, size_t inBufSize)
   : m_routerHost(routerHost)
+  , m_routerIp(INADDR_NONE)
   , m_routerPort(routerPort)
   , m_inBuf(reinterpret_cast<uint8_t*>(inBuf))
   , m_inBufSize(inBufSize)
@@ -105,7 +107,22 @@ NdnFace::processPacket(const uint8_t* pkt, size_t len)
 void
 NdnFace::sendPacket(const uint8_t* pkt, size_t pktSize)
 {
-  m_udp.beginPacket(m_routerHost, m_routerPort);
+  if (WiFi.status() != WL_CONNECTED) {
+    NDNFACE_DBG(F("cannot send because WiFi is disconnected"));
+    m_routerIp = INADDR_NONE;
+  }
+  if (m_routerIp == INADDR_NONE) {
+    if (WiFi.hostByName(m_routerHost, m_routerIp)) {
+      NDNFACE_DBG(F("router IP ") << m_routerIp);
+    }
+    else {
+      NDNFACE_DBG(F("cannot resolve router IP"));
+      m_routerIp = INADDR_NONE;
+      return;
+    }
+  }
+
+  m_udp.beginPacket(m_routerIp, m_routerPort);
   m_udp.write(pkt, pktSize);
   m_udp.endPacket();
 }

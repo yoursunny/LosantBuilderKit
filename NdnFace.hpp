@@ -65,6 +65,7 @@ public:
 private:
   WiFiUDP m_udp;
   const char* const m_routerHost;
+  IPAddress m_routerIp;
   const uint16_t m_routerPort;
   uint8_t* m_inBuf;
   const size_t m_inBufSize;
