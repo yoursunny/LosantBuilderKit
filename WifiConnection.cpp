@@ -32,12 +32,7 @@ WifiConnection::loop()
       this->changeNetwork();
     }
 
-    if (m_credentials[m_credentialIndex].second == nullptr) {
-      WiFi.begin(m_credentials[m_credentialIndex].first);
-    }
-    else {
-      WiFi.begin(m_credentials[m_credentialIndex].first, m_credentials[m_credentialIndex].second);
-    }
+    WiFi.begin(m_credentials[m_credentialIndex].first, m_credentials[m_credentialIndex].second);
   }
 }
 
