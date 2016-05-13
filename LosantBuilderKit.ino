@@ -59,7 +59,7 @@ void
 ndnpingMakePayload(PString& payload)
 {
   TemperatureReading reading = g_temperatureReader.getMovingAverage();
-  payload << "yoursunny.com temperature sensor\n"
+  payload << F("yoursunny.com temperature sensor\n")
           << reading.celsius << "C " << reading.fahrenheit << "F\n"
           << WiFi.SSID() << " " << WiFi.localIP() << " " << millis() << "\n";
 }

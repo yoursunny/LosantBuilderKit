@@ -21,7 +21,7 @@ LosantTemperature::loop()
   }
 
   TemperatureReading reading = m_reader.getMovingAverage();
-  LOSANT_TEMPERATURE_DBG("reporting " << reading.celsius << "C, " << reading.fahrenheit << "F");
+  LOSANT_TEMPERATURE_DBG(F("reporting ") << reading.celsius << "C, " << reading.fahrenheit << "F");
 
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();

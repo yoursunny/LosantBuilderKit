@@ -20,13 +20,13 @@ WifiConnection::loop()
   if (this->isConnected()) {
     if (!m_wasConnected) {
       m_wasConnected = true;
-      WIFI_CONNECTION_DBG("connected to " << WiFi.SSID() << ", " << WiFi.localIP() << "/" << WiFi.subnetMask() << "/" << WiFi.gatewayIP());
+      WIFI_CONNECTION_DBG(F("connected to ") << WiFi.SSID() << ", " << WiFi.localIP() << "/" << WiFi.subnetMask() << "/" << WiFi.gatewayIP());
     }
   }
   else {
     if (m_wasConnected) {
       m_wasConnected = false;
-      WIFI_CONNECTION_DBG("connecting to " << m_credentials[m_credentialIndex].first);
+      WIFI_CONNECTION_DBG(F("connecting to ") << m_credentials[m_credentialIndex].first);
     }
     else if (m_connectTimeout > 0 && millis() - m_lastChangeNetwork > m_connectTimeout) {
       this->changeNetwork();
@@ -49,7 +49,7 @@ WifiConnection::changeNetwork()
   }
   WiFi.disconnect();
   m_wasConnected = true;
-  WIFI_CONNECTION_DBG("changing network");
+  WIFI_CONNECTION_DBG(F("changing network"));
   m_lastChangeNetwork = millis();
 }
 

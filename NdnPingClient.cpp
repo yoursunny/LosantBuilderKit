@@ -35,7 +35,7 @@ NdnPingClient::processData(const ndn::DataLite& data)
     return false;
   }
   m_isPending = false;
-  NDNPINGCLIENT_DBG("received reply rtt=" << _DEC(millis() - m_lastPing) << "ms");
+  NDNPINGCLIENT_DBG(F("received reply rtt=") << _DEC(millis() - m_lastPing) << "ms");
   if (m_led >= 0) {
     digitalWrite(m_led, HIGH);
   }
@@ -46,7 +46,7 @@ bool
 NdnPingClient::ping()
 {
   if (m_isPending) {
-    NDNPINGCLIENT_DBG("last ping timed out");
+    NDNPINGCLIENT_DBG(F("last ping timed out"));
   }
 
   ndn::NameLite& name = m_interest.getName();
@@ -62,7 +62,7 @@ NdnPingClient::ping()
   seq = static_cast<uint32_t>(seq);
   name.appendSequenceNumber(seq, m_seqBuf, sizeof(m_seqBuf));
 
-  NDNPINGCLIENT_DBG("sending ping seq=" << _HEX(static_cast<uint32_t>(seq)));
+  NDNPINGCLIENT_DBG(F("sending ping seq=") << _HEX(static_cast<uint32_t>(seq)));
   m_face.sendInterest(m_interest);
 
   m_isPending = true;

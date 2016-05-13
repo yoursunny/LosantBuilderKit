@@ -57,7 +57,7 @@ NdnFace::loop(int maxPackets)
     yield();
   }
   if (packetLimit < 0) {
-    NDNFACE_DBG(_DEC(-packetLimit) << " packets discarded");
+    NDNFACE_DBG(_DEC(-packetLimit) << F(" packets discarded"));
   }
 }
 
@@ -67,14 +67,14 @@ NdnFace::processPacket(const uint8_t* pkt, size_t len)
   switch (pkt[0]) {
     case ndn_Tlv_Interest: {
       if (m_interestHandler == nullptr) {
-        NDNFACE_DBG("received Interest, no handler");
+        NDNFACE_DBG(F("received Interest, no handler"));
         return;
       }
       ndn::InterestLite interest(s_nameComps, NDNFACE_NAMECOMPS_MAX, s_excludeEntries, NDNFACE_EXCLUDE_MAX, s_keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
       size_t signedBegin, signedEnd;
       ndn_Error error = ndn::Tlv0_1_1WireFormatLite::decodeInterest(interest, pkt, len, &signedBegin, &signedEnd);
       if (error) {
-        NDNFACE_DBG("received Interest decoding error: " << _DEC(error));
+        NDNFACE_DBG(F("received Interest decoding error: ") << _DEC(error));
         return;
       }
       m_interestHandler(interest);
@@ -82,21 +82,21 @@ NdnFace::processPacket(const uint8_t* pkt, size_t len)
     }
     case ndn_Tlv_Data: {
       if (m_dataHandler == nullptr) {
-        NDNFACE_DBG("received Data, no handler");
+        NDNFACE_DBG(F("received Data, no handler"));
         return;
       }
       ndn::DataLite data(s_nameComps, NDNFACE_NAMECOMPS_MAX, s_keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
       size_t signedBegin, signedEnd;
       ndn_Error error = ndn::Tlv0_1_1WireFormatLite::decodeData(data, pkt, len, &signedBegin, &signedEnd);
       if (error) {
-        NDNFACE_DBG("received Data decoding error: " << _DEC(error));
+        NDNFACE_DBG(F("received Data decoding error: ") << _DEC(error));
         return;
       }
       m_dataHandler(data);
       break;
     }
     default: {
-      NDNFACE_DBG("received unknown TLV-TYPE: 0x" << _HEX(pkt[0]));
+      NDNFACE_DBG(F("received unknown TLV-TYPE: 0x") << _HEX(pkt[0]));
       break;
     }
   }
@@ -118,7 +118,7 @@ NdnFace::sendInterest(ndn::InterestLite& interest)
   size_t signedBegin, signedEnd, len;
   ndn_Error error = ndn::Tlv0_1_1WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, output, &len);
   if (error) {
-    NDNFACE_DBG("send Interest encoding error: " << _DEC(error));
+    NDNFACE_DBG(F("send Interest encoding error: ") << _DEC(error));
     return;
   }
 
@@ -129,7 +129,7 @@ void
 NdnFace::sendData(ndn::DataLite& data)
 {
   if (m_hmacKey == nullptr) {
-    NDNFACE_DBG("cannot send Data: HMAC key is unset");
+    NDNFACE_DBG(F("cannot sign Data: HMAC key is unset"));
     return;
   }
   ndn::SignatureLite& signature = data.getSignature();
@@ -142,7 +142,7 @@ NdnFace::sendData(ndn::DataLite& data)
   size_t signedBegin, signedEnd, len;
   ndn_Error error = ndn::Tlv0_1_1WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
   if (error) {
-    NDNFACE_DBG("send Data encoding error: " << _DEC(error));
+    NDNFACE_DBG(F("send Data encoding error: ") << _DEC(error));
     return;
   }
 
@@ -151,7 +151,7 @@ NdnFace::sendData(ndn::DataLite& data)
   data.getSignature().setSignature(ndn::BlobLite(signatureValue, ndn_SHA256_DIGEST_SIZE));
   error = ndn::Tlv0_1_1WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
   if (error) {
-    NDNFACE_DBG("send Data encoding error: " << _DEC(error));
+    NDNFACE_DBG(F("send Data encoding error: ") << _DEC(error));
     return;
   }
 

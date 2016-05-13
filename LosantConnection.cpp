@@ -20,7 +20,7 @@ LosantConnection::loop()
 
   if (!m_wifi.isConnected()) {
     if (this->isConnected()) {
-      LOSANT_CONNECTION_DBG("disconnecting due to lost wifi connection");
+      LOSANT_CONNECTION_DBG(F("disconnecting due to lost wifi connection"));
       m_device.disconnect();
     }
     m_isConnecting = false;
@@ -30,14 +30,14 @@ LosantConnection::loop()
   if (this->isConnected()) {
     if (m_isConnecting) {
       m_isConnecting = false;
-      LOSANT_CONNECTION_DBG("connected in " << _DEC(millis() - m_lastRetry) << "ms");
+      LOSANT_CONNECTION_DBG(F("connected in ") << _DEC(millis() - m_lastRetry) << F("ms"));
     }
   }
   else {
     if (m_isConnecting && millis() - m_lastRetry < RETRY_INTERVAL) {
       return;
     }
-    LOSANT_CONNECTION_DBG("connecting as " << m_device.getId());
+    LOSANT_CONNECTION_DBG(F("connecting as ") << m_device.getId());
     m_device.connectSecure(m_client, m_accessKey, m_accessSecret);
     m_isConnecting = true;
     m_lastRetry = millis();

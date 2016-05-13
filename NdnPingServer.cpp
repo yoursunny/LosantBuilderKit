@@ -18,7 +18,7 @@ NdnPingServer::processInterest(const ndn::InterestLite& interest)
   static ndn_NameComponent nameComps[8];
   ndn::DataLite data(nameComps, 8, nullptr, 0);
   data.getName().set(interest.getName());
-  NDNPINGSERVER_DBG("processing request");
+  NDNPINGSERVER_DBG(F("processing request"));
 
   char payloadBuf[256];
   PString payload(payloadBuf, sizeof(payloadBuf));

@@ -40,7 +40,7 @@ NdnPrefixRegistration::loop()
   }
 
   if (m_state == State::NDN_SENT && millis() - m_lastRegister >= 4000) {
-    NDNPREFIXREG_DBG("NDN timeout");
+    NDNPREFIXREG_DBG(F("NDN timeout"));
     m_state = State::FAIL;
   }
 
@@ -88,10 +88,10 @@ NdnPrefixRegistration::tcpConnect()
 void
 NdnPrefixRegistration::httpSend()
 {
-  NDNPREFIXREG_DBG("Sending HTTP request " << _DEC(m_step));
+  NDNPREFIXREG_DBG(F("Sending HTTP request ") << _DEC(m_step));
 
   PString httpReq(m_httpHeader, sizeof(m_httpHeader));
-  httpReq << "GET " << m_httpUri << _DEC(m_step) << " HTTP/1.1\r\n\r\n";
+  httpReq << "GET " << m_httpUri << _DEC(m_step) << F(" HTTP/1.1\r\n\r\n");
 
   m_tcp.add(httpReq, httpReq.length());
   m_state = State::HTTP_SENT;
@@ -148,12 +148,12 @@ NdnPrefixRegistration::parseHttpHeader()
 
   if (m_pos == 0) {
     if (m_payloadLen > 0) {
-      NDNPREFIXREG_DBG("HTTP Content-Length=" << m_payloadLen);
+      NDNPREFIXREG_DBG(F("HTTP payload size ") << m_payloadLen);
       m_state = State::HTTP_RECV_PAYLOAD;
       m_payload = reinterpret_cast<uint8_t*>(malloc(m_payloadLen));
     }
     else {
-      NDNPREFIXREG_DBG("HTTP Content-Length missing");
+      NDNPREFIXREG_DBG(F("HTTP Content-Length missing"));
       m_state = State::FAIL;
     }
     return;
@@ -161,7 +161,7 @@ NdnPrefixRegistration::parseHttpHeader()
 
   if (strncmp(m_httpHeader, "HTTP/1.1 ", 9) == 0) {
     if (strncmp(m_httpHeader + 9, "200", 3) != 0) {
-      NDNPREFIXREG_DBG("HTTP non-200");
+      NDNPREFIXREG_DBG(F("HTTP non-200"));
       m_state = State::FAIL;
     }
   }
@@ -169,7 +169,7 @@ NdnPrefixRegistration::parseHttpHeader()
     m_payloadLen = atoi(m_httpHeader + 16);
   }
   else if (strcmp(m_httpHeader, "X-Has-More: yes") == 0) {
-    NDNPREFIXREG_DBG("HTTP has-more");
+    NDNPREFIXREG_DBG(F("HTTP has-more"));
     m_hasMore = true;
   }
 }
@@ -183,7 +183,7 @@ NdnPrefixRegistration::tcpDisconnectH(void* self, AsyncClient*)
 void
 NdnPrefixRegistration::tcpDisconnect()
 {
-  NDNPREFIXREG_DBG("TCP disconnected");
+  NDNPREFIXREG_DBG(F("TCP disconnected"));
   if (m_state == State::PAYLOAD_READY) {
     this->ndnSend();
   }
@@ -195,7 +195,7 @@ NdnPrefixRegistration::tcpDisconnect()
 void
 NdnPrefixRegistration::ndnSend()
 {
-  NDNPREFIXREG_DBG("Sending NDN command " << _DEC(m_step));
+  NDNPREFIXREG_DBG(F("Sending NDN command ") << _DEC(m_step));
   m_face.sendPacket(m_payload, m_payloadLen);
   free(m_payload);
   m_payload = nullptr;

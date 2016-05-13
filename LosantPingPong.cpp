@@ -32,16 +32,16 @@ LosantPingPong::loop()
   }
   else {
     ++m_nMissedPongs;
-    LOSANT_PINGPONG_DBG(_DEC(m_nMissedPongs) << " pong missed");
+    LOSANT_PINGPONG_DBG(_DEC(m_nMissedPongs) << F(" pong missed"));
     if (m_nMissedPongs >= m_pongMissThreshold) {
       m_nMissedPongs = 0;
-      LOSANT_PINGPONG_DBG("disconnecting LosantDevice due to too many missed pongs");
+      LOSANT_PINGPONG_DBG(F("disconnecting LosantDevice due to too many missed pongs"));
       m_device.disconnect();
       return;
     }
   }
 
-  LOSANT_PINGPONG_DBG("sending ping");
+  LOSANT_PINGPONG_DBG(F("sending ping"));
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["act"] = "ping";
@@ -54,6 +54,6 @@ LosantPingPong::loop()
 void
 LosantPingPong::handlePong(LosantCommand* cmd)
 {
-  LOSANT_PINGPONG_DBG("pong received");
+  LOSANT_PINGPONG_DBG(F("pong received"));
   m_hasPong = true;
 }
