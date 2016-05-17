@@ -6,7 +6,6 @@
 #include "Button.hpp"
 #include "TemperatureReader.hpp"
 #include "LosantTemperature.hpp"
-#include "LosantPingPong.hpp"
 #include "NdnFace.hpp"
 #include "NdnPingServer.hpp"
 #include "NdnPingClient.hpp"
@@ -18,7 +17,6 @@ const int CONNECTIVITY_LED_PIN = 0; // fully lit: disconnected; dim to 3%: conne
 Button<14, ButtonMode::PullUp> g_button;
 TemperatureReader g_temperatureReader(A0);
 LosantTemperature g_losantTemperature(g_temperatureReader, g_losant.getDevice(), "tempC", "tempF", 17088);
-LosantPingPong g_losantPingPong(g_losant.getDevice(), 23998, 4);
 
 static uint8_t g_pktbuf[1500];
 NdnFace g_face(NDN_ROUTER_HOST, NDN_ROUTER_PORT, 6363, g_pktbuf, sizeof(g_pktbuf));
@@ -33,13 +31,8 @@ NdnPrefixRegistration g_prefixReg(g_face, NDNPREFIXREG_HTTPHOST, NDNPREFIXREG_HT
 
 void
 handleLosantCommand(LosantCommand* cmd) {
-  if (strcmp(cmd->name, "pong") == 0) {
-    g_losantPingPong.handlePong(cmd);
-  }
-  else {
-    Serial.print("Unknown command verb: ");
-    Serial.println(cmd->name);
-  }
+  Serial.print("Unknown command verb: ");
+  Serial.println(cmd->name);
 }
 
 void
@@ -113,7 +106,6 @@ loop()
   g_button.loop();
   g_temperatureReader.loop();
   g_losantTemperature.loop();
-  g_losantPingPong.loop();
   g_face.loop(2);
   g_pingClient.loop();
   g_prefixReg.loop();
