@@ -78,6 +78,9 @@ setup()
   Serial.println();
   Serial.println();
 
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleepMode(WIFI_MODEM_SLEEP);
+
   g_button.onDown(&buttonDown);
 
   pinMode(CONNECTIVITY_LED_PIN, OUTPUT);
