@@ -7,7 +7,7 @@
 /**
  * \brief parse NDN name from URI
  * \param name destination
- * \param uri URI like string; this buffer must be mutable and will be overwritten;
+ * \param uri URI-like string without "ndn:" scheme; this buffer must be mutable and will be overwritten;
  *            limitation: every name component must be non-empty, and cannot contain '/' or '\0'
  */
 void
@@ -45,7 +45,7 @@ public:
   loop(int maxPackets = -1);
 
   void
-  sendPacket(const uint8_t* pkt, size_t pktSize);
+  sendPacket(const uint8_t* pkt, size_t len);
 
   void
   sendInterest(ndn::InterestLite& interest);
@@ -55,7 +55,13 @@ public:
 
 private:
   void
-  processPacket(const uint8_t* pkt, size_t pktSize);
+  processPacket(const uint8_t* pkt, size_t len);
+
+  void
+  processInterest(const uint8_t* pkt, size_t len);
+
+  void
+  processData(const uint8_t* pkt, size_t len);
 
 public:
   static ndn_NameComponent s_nameComps[NDNFACE_NAMECOMPS_MAX];

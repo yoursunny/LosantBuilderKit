@@ -67,50 +67,65 @@ void
 NdnFace::processPacket(const uint8_t* pkt, size_t len)
 {
   switch (pkt[0]) {
-    case ndn_Tlv_Interest: {
-      if (m_interestHandler == nullptr) {
-        NDNFACE_DBG(F("received Interest, no handler"));
-        return;
-      }
-      ndn::InterestLite interest(s_nameComps, NDNFACE_NAMECOMPS_MAX, s_excludeEntries, NDNFACE_EXCLUDE_MAX, s_keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
-      size_t signedBegin, signedEnd;
-      ndn_Error error = ndn::Tlv0_1_1WireFormatLite::decodeInterest(interest, pkt, len, &signedBegin, &signedEnd);
-      if (error) {
-        NDNFACE_DBG(F("received Interest decoding error: ") << _DEC(error));
-        return;
-      }
-      m_interestHandler(interest);
+    case ndn_Tlv_Interest:
+      this->processInterest(pkt, len);
       break;
-    }
-    case ndn_Tlv_Data: {
-      if (m_dataHandler == nullptr) {
-        NDNFACE_DBG(F("received Data, no handler"));
-        return;
-      }
-      ndn::DataLite data(s_nameComps, NDNFACE_NAMECOMPS_MAX, s_keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
-      size_t signedBegin, signedEnd;
-      ndn_Error error = ndn::Tlv0_1_1WireFormatLite::decodeData(data, pkt, len, &signedBegin, &signedEnd);
-      if (error) {
-        NDNFACE_DBG(F("received Data decoding error: ") << _DEC(error));
-        return;
-      }
-      m_dataHandler(data);
+    case ndn_Tlv_Data:
+      this->processData(pkt, len);
       break;
-    }
-    default: {
+    default:
       NDNFACE_DBG(F("received unknown TLV-TYPE: 0x") << _HEX(pkt[0]));
       break;
-    }
   }
 }
 
 void
-NdnFace::sendPacket(const uint8_t* pkt, size_t pktSize)
+NdnFace::processInterest(const uint8_t* pkt, size_t len)
+{
+  if (m_interestHandler == nullptr) {
+    NDNFACE_DBG(F("received Interest, no handler"));
+    return;
+  }
+
+  ndn::InterestLite interest(s_nameComps, NDNFACE_NAMECOMPS_MAX, s_excludeEntries, NDNFACE_EXCLUDE_MAX, s_keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
+  size_t signedBegin, signedEnd;
+  ndn_Error error = ndn::Tlv0_1_1WireFormatLite::decodeInterest(interest, pkt, len, &signedBegin, &signedEnd);
+  if (error) {
+    NDNFACE_DBG(F("received Interest decoding error: ") << _DEC(error));
+    return;
+  }
+
+  m_interestHandler(interest);
+}
+
+void
+NdnFace::processData(const uint8_t* pkt, size_t len)
+{
+  if (m_dataHandler == nullptr) {
+    NDNFACE_DBG(F("received Data, no handler"));
+    return;
+  }
+
+  ndn::DataLite data(s_nameComps, NDNFACE_NAMECOMPS_MAX, s_keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
+  size_t signedBegin, signedEnd;
+  ndn_Error error = ndn::Tlv0_1_1WireFormatLite::decodeData(data, pkt, len, &signedBegin, &signedEnd);
+  if (error) {
+    NDNFACE_DBG(F("received Data decoding error: ") << _DEC(error));
+    return;
+  }
+
+  m_dataHandler(data);
+}
+
+void
+NdnFace::sendPacket(const uint8_t* pkt, size_t len)
 {
   if (WiFi.status() != WL_CONNECTED) {
     NDNFACE_DBG(F("cannot send because WiFi is disconnected"));
     m_routerIp = INADDR_NONE;
+    return;
   }
+
   if (m_routerIp == INADDR_NONE) {
     if (WiFi.hostByName(m_routerHost, m_routerIp)) {
       NDNFACE_DBG(F("router IP ") << m_routerIp);
@@ -123,7 +138,7 @@ NdnFace::sendPacket(const uint8_t* pkt, size_t pktSize)
   }
 
   m_udp.beginPacket(m_routerIp, m_routerPort);
-  m_udp.write(pkt, pktSize);
+  m_udp.write(pkt, len);
   m_udp.endPacket();
 }
 
