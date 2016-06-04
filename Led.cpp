@@ -11,6 +11,7 @@ Led::Led(int pin, int mode)
 {
   assert(mode == HIGH || mode == LOW);
   pinMode(pin, OUTPUT);
+  this->display();
 }
 
 Led::Led(Led& next)
@@ -49,13 +50,13 @@ Led::display()
 
   if (m_state == State::OFF) {
     analogWrite(m_pin, 0);
-    digitalWrite(m_pin, m_isLowMode ? LOW : HIGH);
+    digitalWrite(m_pin, m_isLowMode ? HIGH : LOW);
   }
   else if (m_state == State::ON) {
     analogWrite(m_pin, 0);
     digitalWrite(m_pin, m_isLowMode ? LOW : HIGH);
   }
   else {
-    analogWrite(m_pin, static_cast<int>(PWMRANGE * (m_isLowMode ? (1.0 - m_dim) : m_dim)));
+    analogWrite(m_pin, constrain(static_cast<int>(PWMRANGE * (m_isLowMode ? (1.0 - m_dim) : m_dim)), 1, PWMRANGE));
   }
 }

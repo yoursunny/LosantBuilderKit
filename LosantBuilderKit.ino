@@ -16,6 +16,11 @@ Led g_powerLed(0, LOW);
 Led g_pingLed(g_powerLed);
 Led g_connectivityLed(g_pingLed);
 Button g_button(14, INPUT_PULLUP);
+Led g_ledR(12, LOW);
+Led g_ledG(13, LOW);
+Led g_ledY(15, LOW);
+Led g_ledB(5, LOW);
+Led g_ledW(4, LOW);
 
 WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15329);
 LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
@@ -34,16 +39,61 @@ NdnPingClient g_pingClient(g_face, g_outPingInterest, 29696);
 NdnPrefixRegistration g_prefixReg(g_face, NDNPREFIXREG_HTTPHOST, NDNPREFIXREG_HTTPPORT, NDNPREFIXREG_HTTPURI, 305112, 62983);
 
 void
-handleLosantCommand(LosantCommand* cmd) {
-  Serial.print("Unknown command verb: ");
-  Serial.println(cmd->name);
+controlSingleLed(Led& led, JsonObject& cmdPayload, const char* objKey)
+{
+  if (!cmdPayload.containsKey(objKey)) {
+    return;
+  }
+
+  auto value = cmdPayload[objKey];
+  if (value.is<bool>()) {
+    if (value.as<bool>()) {
+      Serial << F("Turn on LED-") << objKey << "\n";
+      led.on();
+    }
+    else {
+      Serial << F("Turn off LED-") << objKey << "\n";
+      led.off();
+    }
+  }
+  else if (value.is<float>()) {
+    Serial << F("Dim LED-") << objKey << " " << value.as<float>() << "\n";
+    led.dim(value.as<float>());
+  }
+  else {
+    Serial << F("Unset LED-") << objKey << "\n";
+    led.unset();
+  }
+}
+
+void
+handleLedCommand(LosantCommand* cmd)
+{
+  if (cmd->payload == nullptr) {
+    Serial << F("LED command requires a payload\n");
+    return;
+  }
+  controlSingleLed(g_ledR, *cmd->payload, "R");
+  controlSingleLed(g_ledG, *cmd->payload, "G");
+  controlSingleLed(g_ledY, *cmd->payload, "Y");
+  controlSingleLed(g_ledB, *cmd->payload, "B");
+  controlSingleLed(g_ledW, *cmd->payload, "W");
+}
+
+void
+handleLosantCommand(LosantCommand* cmd)
+{
+  if (strcmp(cmd->name, "led") == 0) {
+    handleLedCommand(cmd);
+  }
+  else {
+    Serial << F("Unknown command verb: ") << cmd->name << "\n";
+  }
 }
 
 void
 buttonDown(int, bool)
 {
-  Serial.println("Button pressed.");
-
   //StaticJsonBuffer<200> jsonBuffer;
   //JsonObject& root = jsonBuffer.createObject();
   //root["act"] = "button";
