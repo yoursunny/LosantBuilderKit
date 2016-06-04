@@ -14,7 +14,7 @@
 WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15329);
 LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
 const int CONNECTIVITY_LED_PIN = 0; // fully lit: disconnected; dim to 3%: connected
-Button<14, ButtonMode::PullUp> g_button;
+Button g_button(14, INPUT_PULLUP);
 TemperatureReader g_temperatureReader(A0);
 LosantTemperature g_losantTemperature(g_temperatureReader, g_losant.getDevice(), "tempC", "tempF", 17088);
 
@@ -36,7 +36,7 @@ handleLosantCommand(LosantCommand* cmd) {
 }
 
 void
-buttonDown(int, bool, unsigned long)
+buttonDown(int, bool)
 {
   Serial.println("Button pressed.");
 
