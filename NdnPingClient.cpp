@@ -1,21 +1,16 @@
 #include "NdnPingClient.hpp"
-#include <Arduino.h>
 #include "logger.hpp"
 
 #define NDNPINGCLIENT_DBG(...) DBG(NdnPingClient, __VA_ARGS__)
 
-NdnPingClient::NdnPingClient(NdnFace& face, ndn::InterestLite& interest, int pingInterval, int led)
+NdnPingClient::NdnPingClient(NdnFace& face, ndn::InterestLite& interest, int pingInterval)
   : m_face(face)
   , m_interest(interest)
   , m_pingInterval(pingInterval)
-  , m_led(led)
   , m_lastPing(millis())
   , m_isPending(false)
+  , m_handler(nullptr)
 {
-  if (m_led >= 0) {
-    pinMode(m_led, OUTPUT);
-    digitalWrite(m_led, HIGH);
-  }
 }
 
 void
@@ -36,9 +31,11 @@ NdnPingClient::processData(const ndn::DataLite& data)
   }
   m_isPending = false;
   NDNPINGCLIENT_DBG(F("received reply rtt=") << _DEC(millis() - m_lastPing) << "ms");
-  if (m_led >= 0) {
-    digitalWrite(m_led, HIGH);
+
+  if (m_handler != nullptr) {
+    m_handler(NdnPingEvent::RESPONSE, 0);
   }
+
   return true;
 }
 
@@ -47,6 +44,9 @@ NdnPingClient::ping()
 {
   if (m_isPending) {
     NDNPINGCLIENT_DBG(F("last ping timed out"));
+    if (m_handler != nullptr) {
+      m_handler(NdnPingEvent::TIMEOUT, 0);
+    }
   }
 
   ndn::NameLite& name = m_interest.getName();
@@ -67,7 +67,8 @@ NdnPingClient::ping()
 
   m_isPending = true;
   m_lastPing = millis();
-  if (m_led >= 0) {
-    digitalWrite(m_led, LOW);
+
+  if (m_handler != nullptr) {
+    m_handler(NdnPingEvent::PROBE, 0);
   }
 }
