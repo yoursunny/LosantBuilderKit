@@ -24,8 +24,10 @@ TemperatureReader::loop()
 TemperatureReading
 TemperatureReader::getMovingAverage() const
 {
+  double voltage = m_avg / 1024.0;
+  voltage *= 2.0; // voltage divider
   TemperatureReading reading;
-  reading.celsius = ((m_avg / 1024.0 * 2.0) - 0.57) * 100.0;
+  reading.celsius = 100.0 * voltage - 50.0; // https://www.adafruit.com/product/165
   reading.fahrenheit = reading.celsius * 1.8 + 32;
   return reading;
 }
