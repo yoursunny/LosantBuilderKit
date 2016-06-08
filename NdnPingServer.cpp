@@ -3,7 +3,7 @@
 
 #define NDNPINGSERVER_DBG(...) DBG(NdnPingServer, __VA_ARGS__)
 
-NdnPingServer::NdnPingServer(NdnFace& face, const ndn::NameLite& prefix)
+NdnPingServer::NdnPingServer(ndn::Face& face, const ndn::NameLite& prefix)
   : m_face(face)
   , m_prefix(prefix)
 {

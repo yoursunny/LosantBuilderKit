@@ -5,7 +5,7 @@
 
 #define NDNPREFIXREG_DBG(...) DBG(NdnPrefixRegistration, __VA_ARGS__)
 
-NdnPrefixRegistration::NdnPrefixRegistration(NdnFace& face, const char* httpHost, uint16_t httpPort, const char* httpUri, int registerInterval, int retryInterval)
+NdnPrefixRegistration::NdnPrefixRegistration(ndn::Face& face, const char* httpHost, uint16_t httpPort, const char* httpUri, int registerInterval, int retryInterval)
   : m_httpHost(httpHost)
   , m_httpPort(httpPort)
   , m_httpUri(httpUri)

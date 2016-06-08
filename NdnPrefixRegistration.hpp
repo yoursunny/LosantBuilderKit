@@ -2,7 +2,7 @@
 #define NDN_PREFIX_REGISTRATION_HPP
 
 #include <ESPAsyncTCP.h>
-#include "NdnFace.hpp"
+#include <esp8266ndn.h>
 
 /**
  * \brief perform periodical NDN prefix registrations
@@ -23,7 +23,7 @@ public:
    * \param registerInterval interval between successful registrations, in millis
    * \param retryInterval interval between unsucessful registrations, in millis
    */
-  NdnPrefixRegistration(NdnFace& face, const char* httpHost, uint16_t httpPort, const char* httpUri, int registerInterval = 60000, int retryInterval = 10000);
+  NdnPrefixRegistration(ndn::Face& face, const char* httpHost, uint16_t httpPort, const char* httpUri, int registerInterval = 60000, int retryInterval = 10000);
 
   ~NdnPrefixRegistration();
 
@@ -83,7 +83,7 @@ private:
   const uint16_t m_httpPort;
   const char* const m_httpUri;
 
-  NdnFace& m_face;
+  ndn::Face& m_face;
   const int m_registerInterval;
   const int m_retryInterval;
   unsigned long m_lastRegister;

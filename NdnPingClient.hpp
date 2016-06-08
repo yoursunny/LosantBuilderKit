@@ -1,7 +1,7 @@
 #ifndef NDN_PING_CLIENT_HPP
 #define NDN_PING_CLIENT_HPP
 
-#include "NdnFace.hpp"
+#include <esp8266ndn.h>
 
 enum class NdnPingEvent {
   NONE,
@@ -20,7 +20,7 @@ typedef void (*NdnPingHandler)(NdnPingEvent evt, uint64_t seq);
 class NdnPingClient
 {
 public:
-  NdnPingClient(NdnFace& face, ndn::InterestLite& interest, int pingInterval);
+  NdnPingClient(ndn::Face& face, ndn::InterestLite& interest, int pingInterval);
 
   void
   loop();
@@ -38,7 +38,7 @@ public:
   }
 
 private:
-  NdnFace& m_face;
+  ndn::Face& m_face;
   ndn::InterestLite& m_interest;
   uint8_t m_seqBuf[9];
   const int m_pingInterval;

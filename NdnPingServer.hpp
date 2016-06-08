@@ -1,7 +1,7 @@
 #ifndef NDN_PING_SERVER_HPP
 #define NDN_PING_SERVER_HPP
 
-#include "NdnFace.hpp"
+#include <esp8266ndn.h>
 #include <PString.h>
 
 class NdnPingServer
@@ -9,7 +9,7 @@ class NdnPingServer
 public:
   typedef void (*MakePayload)(PString&);
 
-  NdnPingServer(NdnFace& face, const ndn::NameLite& prefix);
+  NdnPingServer(ndn::Face& face, const ndn::NameLite& prefix);
 
   bool
   processInterest(const ndn::InterestLite& interest);
@@ -17,7 +17,7 @@ public:
   MakePayload makePayload;
 
 private:
-  NdnFace& m_face;
+  ndn::Face& m_face;
   const ndn::NameLite& m_prefix;
 };
 

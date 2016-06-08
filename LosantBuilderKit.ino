@@ -1,4 +1,6 @@
 #include <ESP8266WiFi.h>
+#include <WiFiUdp.h>
+#include <esp8266ndn.h>
 #include <Streaming.h>
 #include "credentials.hpp"
 #include "Button.hpp"
@@ -7,7 +9,6 @@
 #include "LosantConnection.hpp"
 #include "TemperatureReader.hpp"
 #include "LosantTemperature.hpp"
-#include "NdnFace.hpp"
 #include "NdnPingServer.hpp"
 #include "NdnPingClient.hpp"
 #include "NdnPrefixRegistration.hpp"
@@ -28,8 +29,10 @@ LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_AC
 TemperatureReader g_temperatureReader(A0);
 LosantTemperature g_losantTemperature(g_temperatureReader, g_losant.getDevice(), "tempC", "tempF", 17088);
 
-static uint8_t g_pktbuf[1500];
-NdnFace g_face(NDN_ROUTER_HOST, NDN_ROUTER_PORT, 6363, g_pktbuf, sizeof(g_pktbuf));
+WiFiUDP g_faceUdp;
+ndn::UnicastUdpTransport g_faceTransport(g_faceUdp);
+bool g_isFaceTransportInitialized = false;
+ndn::Face g_face(g_faceTransport);
 static ndn_NameComponent g_inPingPrefixComps[8];
 static ndn::NameLite g_inPingPrefix(g_inPingPrefixComps, 8);
 NdnPingServer g_pingServer(g_face, g_inPingPrefix);
@@ -103,6 +106,17 @@ buttonDown(int, bool)
 }
 
 void
+ndn_parseName(ndn::NameLite& name, char* uri)
+{
+  name.clear();
+  char* token = strtok(uri, "/");
+  while (token != nullptr) {
+    name.append(token);
+    token = strtok(nullptr, "/");
+  }
+}
+
+void
 ndnpingMakePayload(PString& payload)
 {
   TemperatureReading reading = g_temperatureReader.getMovingAverage();
@@ -125,13 +139,13 @@ ndnpingEvent(NdnPingEvent evt, uint64_t seq)
 }
 
 void
-processInterest(const ndn::InterestLite& interest)
+processInterest(void*, const ndn::InterestLite& interest, uint64_t)
 {
   g_pingServer.processInterest(interest);
 }
 
 void
-processData(const ndn::DataLite& data)
+processData(void*, const ndn::DataLite& data, uint64_t)
 {
   g_pingClient.processData(data) ||
   g_prefixReg.processData(data);
@@ -157,8 +171,8 @@ setup()
   g_pingServer.makePayload = &ndnpingMakePayload;
   ndn_parseName(g_outPingInterest.getName(), NDN_OUTPING_PREFIX);
   g_pingClient.onEvent(&ndnpingEvent);
-  g_face.onInterest(&processInterest);
-  g_face.onData(&processData);
+  g_face.onInterest(&processInterest, nullptr);
+  g_face.onData(&processData, nullptr);
   g_face.setHmacKey(NDN_HMAC_KEY, sizeof(NDN_HMAC_KEY));
 }
 
@@ -174,10 +188,18 @@ loop()
     g_connectivityLed.on();
   }
 
+  if (!g_isFaceTransportInitialized && g_wifi.isConnected()) {
+    IPAddress routerIp;
+    if (WiFi.hostByName(NDN_ROUTER_HOST, routerIp)) {
+      g_faceTransport.begin(routerIp, NDN_ROUTER_PORT, 6363);
+      g_isFaceTransportInitialized = true;
+    }
+  }
+
   g_button.loop();
   g_temperatureReader.loop();
   g_losantTemperature.loop();
-  g_face.loop(2);
+  g_face.loop();
   g_pingClient.loop();
   g_prefixReg.loop();
   delay(10);

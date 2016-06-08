@@ -3,7 +3,7 @@
 
 #define NDNPINGCLIENT_DBG(...) DBG(NdnPingClient, __VA_ARGS__)
 
-NdnPingClient::NdnPingClient(NdnFace& face, ndn::InterestLite& interest, int pingInterval)
+NdnPingClient::NdnPingClient(ndn::Face& face, ndn::InterestLite& interest, int pingInterval)
   : m_face(face)
   , m_interest(interest)
   , m_pingInterval(pingInterval)
