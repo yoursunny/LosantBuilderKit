@@ -12,6 +12,9 @@ WifiConnection::WifiConnection(const WifiCredential* credentials, size_t nCreden
   , m_lastChangeNetwork(millis())
 {
   WiFi.disconnect();
+  WiFi.persistent(false);
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleepMode(WIFI_MODEM_SLEEP);
 }
 
 void
