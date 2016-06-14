@@ -2,6 +2,9 @@
 #include <WiFiUdp.h>
 #include <esp8266ndn.h>
 #include <Streaming.h>
+extern "C" {
+#include "user_interface.h"
+}
 #include "credentials.hpp"
 #include "Button.hpp"
 #include "Led.hpp"
@@ -158,6 +161,13 @@ setup()
   delay(2000);
   Serial.println();
   Serial.println();
+
+  uint8_t mac[6];
+  mac[0] = 0x02;
+  for (int i = 1; i < 6; ++i) {
+    mac[i] = random(0x00, 0xFF);
+  }
+  wifi_set_macaddr(STATION_IF, mac);
 
   g_powerLed.dim(0.03);
   g_button.onDown(&buttonDown);
