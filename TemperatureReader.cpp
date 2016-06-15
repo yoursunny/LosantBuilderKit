@@ -1,9 +1,8 @@
 #include "TemperatureReader.hpp"
 #include <Arduino.h>
 
-TemperatureReader::TemperatureReader(int pin, double alpha)
-  : m_pin(pin)
-  , m_alpha(alpha)
+TemperatureReader::TemperatureReader(double alpha)
+  : m_alpha(alpha)
   , m_avg(-1.0)
 {
 }
@@ -11,7 +10,7 @@ TemperatureReader::TemperatureReader(int pin, double alpha)
 void
 TemperatureReader::loop()
 {
-  double v = static_cast<double>(analogRead(m_pin));
+  double v = static_cast<double>(analogRead(A0));
 
   if (m_avg < 0.0) {
     m_avg = v;

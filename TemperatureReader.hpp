@@ -20,7 +20,7 @@ public:
    * \param alpha the effect of new value in moving average
    */
   explicit
-  TemperatureReader(int pin, double alpha = 0.1);
+  TemperatureReader(double alpha = 0.1);
 
   void
   loop();
@@ -29,7 +29,6 @@ public:
   getMovingAverage() const;
 
 private:
-  const int m_pin;
   const double m_alpha;
   double m_avg;
 };

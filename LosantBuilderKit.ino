@@ -29,7 +29,7 @@ Led g_ledW(4, LOW);
 WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15329);
 LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
 
-TemperatureReader g_temperatureReader(A0);
+TemperatureReader g_temperatureReader;
 LosantTemperature g_losantTemperature(g_temperatureReader, g_losant.getDevice(), "tempC", "tempF", 17088);
 
 WiFiUDP g_faceUdp;
