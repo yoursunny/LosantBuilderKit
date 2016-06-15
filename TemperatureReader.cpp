@@ -9,8 +9,9 @@ static constexpr int LSHIFT_BITS = std::numeric_limits<uint32_t>::digits - ANALO
 static const uint32_t NO_READING = std::numeric_limits<uint32_t>::max();
 #pragma pop_macro("max")
 
-TemperatureReader::TemperatureReader(int alpha)
-  : m_alpha(alpha)
+TemperatureReader::TemperatureReader(float voltageDivider, int alpha)
+  : m_voltageDivider(voltageDivider)
+  , m_alpha(alpha)
   , m_avg(NO_READING)
 {
 }
@@ -33,7 +34,7 @@ TemperatureReading
 TemperatureReader::getMovingAverage() const
 {
   double voltage = (m_avg >> LSHIFT_BITS) / 1024.0;
-  voltage *= 2.0; // voltage divider
+  voltage *= m_voltageDivider;
   TemperatureReading reading;
   reading.celsius = 100.0 * voltage - 50.0; // https://www.adafruit.com/product/165
   reading.fahrenheit = reading.celsius * 1.8 + 32;

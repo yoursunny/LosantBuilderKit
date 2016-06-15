@@ -18,11 +18,11 @@ class TemperatureReader
 {
 public:
   /**
-   * \param pin the analog pin
+   * \param voltageDivider multiplication factor for voltage divider
    * \param alpha effect of new value in moving average is 1/(2^alpha)
    */
   explicit
-  TemperatureReader(int alpha = 3);
+  TemperatureReader(float voltageDivider, int alpha = 3);
 
   void
   loop();
@@ -31,6 +31,7 @@ public:
   getMovingAverage() const;
 
 private:
+  const float m_voltageDivider;
   const int m_alpha;
   uint32_t m_avg;
 };
