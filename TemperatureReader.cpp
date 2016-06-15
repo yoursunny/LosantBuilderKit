@@ -1,29 +1,38 @@
 #include "TemperatureReader.hpp"
+#include <limits>
 #include <Arduino.h>
 
-TemperatureReader::TemperatureReader(double alpha)
+static const int ANALOG_BITS = 10;
+static constexpr int LSHIFT_BITS = std::numeric_limits<uint32_t>::digits - ANALOG_BITS;
+#pragma push_macro("max")
+#undef max
+static const uint32_t NO_READING = std::numeric_limits<uint32_t>::max();
+#pragma pop_macro("max")
+
+TemperatureReader::TemperatureReader(int alpha)
   : m_alpha(alpha)
-  , m_avg(-1.0)
+  , m_avg(NO_READING)
 {
 }
 
 void
 TemperatureReader::loop()
 {
-  double v = static_cast<double>(analogRead(A0));
+  int v = analogRead(A0) << LSHIFT_BITS;
 
-  if (m_avg < 0.0) {
+  if (m_avg == NO_READING) {
     m_avg = v;
   }
   else {
-    m_avg = m_alpha * v + (1 - m_alpha) * m_avg;
+    m_avg -= m_avg >> m_alpha;
+    m_avg += v >> m_alpha;
   }
 }
 
 TemperatureReading
 TemperatureReader::getMovingAverage() const
 {
-  double voltage = m_avg / 1024.0;
+  double voltage = (m_avg >> LSHIFT_BITS) / 1024.0;
   voltage *= 2.0; // voltage divider
   TemperatureReading reading;
   reading.celsius = 100.0 * voltage - 50.0; // https://www.adafruit.com/product/165

@@ -1,6 +1,8 @@
 #ifndef TEMPERATURE_READER_HPP
 #define TEMPERATURE_READER_HPP
 
+#include <cinttypes>
+
 struct TemperatureReading
 {
   double celsius;
@@ -17,10 +19,10 @@ class TemperatureReader
 public:
   /**
    * \param pin the analog pin
-   * \param alpha the effect of new value in moving average
+   * \param alpha effect of new value in moving average is 1/(2^alpha)
    */
   explicit
-  TemperatureReader(double alpha = 0.1);
+  TemperatureReader(int alpha = 3);
 
   void
   loop();
@@ -29,8 +31,8 @@ public:
   getMovingAverage() const;
 
 private:
-  const double m_alpha;
-  double m_avg;
+  const int m_alpha;
+  uint32_t m_avg;
 };
 
 #endif // TEMPERATURE_READER_HPP
