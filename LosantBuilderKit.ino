@@ -17,7 +17,6 @@ extern "C" {
 
 Led g_powerLed(0, LOW);
 Led g_connectivityLed(g_powerLed);
-Led g_pingLed(2, LOW);
 Button g_button(14, INPUT_PULLUP);
 Led g_ledR(12, LOW);
 Led g_ledG(13, LOW);
@@ -115,19 +114,6 @@ ndnpingMakePayload(PString& payload)
 }
 
 void
-ndnpingEvent(void*, ndn::PingClient::Event evt, uint64_t seq)
-{
-  switch (evt) {
-    case ndn::PingClient::Event::PROBE:
-      g_pingLed.dim(0.40);
-      break;
-    default:
-      g_pingLed.unset();
-      break;
-  }
-}
-
-void
 processInterest(void*, const ndn::InterestLite& interest, uint64_t)
 {
   g_pingServer.processInterest(interest);
@@ -163,7 +149,6 @@ setup()
   ndn::parseNameFromUri(g_inPingPrefix, NDN_INPING_PREFIX);
   g_pingServer.makePayload = &ndnpingMakePayload;
   ndn::parseNameFromUri(g_outPingInterest.getName(), NDN_OUTPING_PREFIX);
-  g_pingClient.onEvent(&ndnpingEvent, nullptr);
   g_face.onInterest(&processInterest, nullptr);
   g_face.onData(&processData, nullptr);
   g_face.setHmacKey(NDN_HMAC_KEY, sizeof(NDN_HMAC_KEY));
