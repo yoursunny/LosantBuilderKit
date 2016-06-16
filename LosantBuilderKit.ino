@@ -13,12 +13,11 @@ extern "C" {
 #include "TemperatureReader.hpp"
 #include "LosantTemperature.hpp"
 #include "NdnPingServer.hpp"
-#include "NdnPingClient.hpp"
 #include "NdnPrefixRegistration.hpp"
 
 Led g_powerLed(0, LOW);
-Led g_pingLed(g_powerLed);
-Led g_connectivityLed(g_pingLed);
+Led g_connectivityLed(g_powerLed);
+Led g_pingLed(2, LOW);
 Button g_button(14, INPUT_PULLUP);
 Led g_ledR(12, LOW);
 Led g_ledG(13, LOW);
@@ -41,7 +40,7 @@ static ndn::NameLite g_inPingPrefix(g_inPingPrefixComps, 8);
 NdnPingServer g_pingServer(g_face, g_inPingPrefix);
 static ndn_NameComponent g_outPingPrefixComps[8];
 static ndn::InterestLite g_outPingInterest(g_outPingPrefixComps, 8, nullptr, 0, nullptr, 0);
-NdnPingClient g_pingClient(g_face, g_outPingInterest, 29696);
+ndn::PingClient g_pingClient(g_face, g_outPingInterest, 29696, 2000);
 NdnPrefixRegistration g_prefixReg(g_face, NDNPREFIXREG_HTTPHOST, NDNPREFIXREG_HTTPPORT, NDNPREFIXREG_HTTPURI, 305112, 62983);
 
 void
@@ -104,19 +103,6 @@ buttonDown(int, bool)
   //JsonObject& root = jsonBuffer.createObject();
   //root["act"] = "button";
   //g_losant.getDevice().sendState(root);
-
-  g_pingClient.ping();
-}
-
-void
-ndn_parseName(ndn::NameLite& name, char* uri)
-{
-  name.clear();
-  char* token = strtok(uri, "/");
-  while (token != nullptr) {
-    name.append(token);
-    token = strtok(nullptr, "/");
-  }
 }
 
 void
@@ -129,11 +115,11 @@ ndnpingMakePayload(PString& payload)
 }
 
 void
-ndnpingEvent(NdnPingEvent evt, uint64_t seq)
+ndnpingEvent(void*, ndn::PingClient::Event evt, uint64_t seq)
 {
   switch (evt) {
-    case NdnPingEvent::PROBE:
-      g_pingLed.dim(0.60);
+    case ndn::PingClient::Event::PROBE:
+      g_pingLed.dim(0.40);
       break;
     default:
       g_pingLed.unset();
@@ -174,10 +160,10 @@ setup()
 
   g_losant.getDevice().onCommand(&handleLosantCommand);
 
-  ndn_parseName(g_inPingPrefix, NDN_INPING_PREFIX);
+  ndn::parseNameFromUri(g_inPingPrefix, NDN_INPING_PREFIX);
   g_pingServer.makePayload = &ndnpingMakePayload;
-  ndn_parseName(g_outPingInterest.getName(), NDN_OUTPING_PREFIX);
-  g_pingClient.onEvent(&ndnpingEvent);
+  ndn::parseNameFromUri(g_outPingInterest.getName(), NDN_OUTPING_PREFIX);
+  g_pingClient.onEvent(&ndnpingEvent, nullptr);
   g_face.onInterest(&processInterest, nullptr);
   g_face.onData(&processData, nullptr);
   g_face.setHmacKey(NDN_HMAC_KEY, sizeof(NDN_HMAC_KEY));
