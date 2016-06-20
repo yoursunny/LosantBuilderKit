@@ -19,7 +19,7 @@ TemperatureReader::TemperatureReader(float voltageDivider, int alpha)
 void
 TemperatureReader::loop()
 {
-  int v = analogRead(A0) << LSHIFT_BITS;
+  uint32_t v = static_cast<uint32_t>(analogRead(A0)) << LSHIFT_BITS;
 
   if (m_avg == NO_READING) {
     m_avg = v;
