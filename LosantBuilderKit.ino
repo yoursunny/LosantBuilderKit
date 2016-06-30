@@ -6,6 +6,7 @@
 #include "Button.hpp"
 #include "Led.hpp"
 #include "WifiConnection.hpp"
+#include "DyndnsUpdate.hpp"
 #include "LosantConnection.hpp"
 #include "TemperatureReader.hpp"
 #include "LosantTemperature.hpp"
@@ -22,6 +23,7 @@ Led g_ledB(5, LOW);
 Led g_ledW(4, LOW);
 
 WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15329);
+DyndnsUpdate g_dyndns(DYNDNS_SERVER, DYNDNS_HOST, DYNDNS_AUTH, 1824038, 65651);
 LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
 
 TemperatureReader g_temperatureReader(2.0);
@@ -148,6 +150,7 @@ void
 loop()
 {
   g_wifi.loop();
+  g_dyndns.loop();
   g_losant.loop();
   if (g_wifi.isConnected() && g_losant.isConnected()) {
     g_connectivityLed.unset();

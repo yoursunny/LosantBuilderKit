@@ -10,6 +10,10 @@ const char* LOSANT_DEVICE_ID = "x";
 const char* LOSANT_ACCESS_KEY = "x";
 const char* LOSANT_ACCESS_SECRET = "x";
 
+const char* DYNDNS_SERVER = "dyn.dns.he.net";
+const char* DYNDNS_HOST = "dyn.example.net";
+const char* DYNDNS_AUTH = "dXNlcjpwYXNzd29yZA==";
+
 const char* NDN_ROUTER_HOST = "x";
 const uint16_t NDN_ROUTER_PORT = 6363;
 const uint8_t NDN_HMAC_KEY[] = {
