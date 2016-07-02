@@ -1,7 +1,7 @@
 #ifndef LOSANT_TEMPERATURE_HPP
 #define LOSANT_TEMPERATURE_HPP
 
-#include <Losant.h>
+#include "LosantDeviceAsync.hpp"
 #include "TemperatureReader.hpp"
 
 /**
@@ -15,14 +15,14 @@ public:
    * \param fahrenheitVar Losant device state variable name for fahrenheit temperature, nullptr to disable reporting
    * \param reportInterval interval between reports, in millis
    */
-  LosantTemperature(TemperatureReader& reader, LosantDevice& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval = 15000);
+  LosantTemperature(TemperatureReader& reader, LosantDeviceAsync& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval = 15000);
 
   void
   loop();
 
 private:
   TemperatureReader& m_reader;
-  LosantDevice& m_device;
+  LosantDeviceAsync& m_device;
   const char* const m_celsiusVar;
   const char* const m_fahrenheitVar;
   const int m_reportInterval;

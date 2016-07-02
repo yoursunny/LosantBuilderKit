@@ -7,7 +7,7 @@
 #include "Led.hpp"
 #include "WifiConnection.hpp"
 #include "DyndnsUpdate.hpp"
-#include "LosantConnection.hpp"
+#include "LosantDeviceAsync.hpp"
 #include "TemperatureReader.hpp"
 #include "LosantTemperature.hpp"
 #include "NdnPingServer.hpp"
@@ -24,10 +24,10 @@ Led g_ledW(4, LOW);
 
 WifiConnection g_wifi(WIFI_NETWORKS, sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]), 15329);
 DyndnsUpdate g_dyndns(DYNDNS_SERVER, DYNDNS_HOST, DYNDNS_AUTH, 1824038, 65651);
-LosantConnection g_losant(g_wifi, LOSANT_DEVICE_ID, LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
+LosantDeviceAsync g_losant(LOSANT_DEVICE_ID);
 
 TemperatureReader g_temperatureReader(2.0);
-LosantTemperature g_losantTemperature(g_temperatureReader, g_losant.getDevice(), "tempC", "tempF", 17088);
+LosantTemperature g_losantTemperature(g_temperatureReader, g_losant, "tempC", "tempF", 17088);
 
 WiFiUDP g_faceUdp;
 ndn::UnicastUdpTransport g_faceTransport(g_faceUdp);
@@ -136,7 +136,8 @@ setup()
   g_powerLed.dim(0.03);
   g_button.onDown(&buttonDown);
 
-  g_losant.getDevice().onCommand(&handleLosantCommand);
+  g_losant.onCommand(&handleLosantCommand);
+  g_losant.setCredentials(LOSANT_ACCESS_KEY, LOSANT_ACCESS_SECRET);
 
   ndn::parseNameFromUri(g_inPingPrefix, NDN_INPING_PREFIX);
   g_pingServer.makePayload = &ndnpingMakePayload;
@@ -151,12 +152,15 @@ loop()
 {
   g_wifi.loop();
   g_dyndns.loop();
-  g_losant.loop();
-  if (g_wifi.isConnected() && g_losant.isConnected()) {
-    g_connectivityLed.unset();
+  if (!g_wifi.isConnected()) {
+    g_connectivityLed.on();
+  }
+  else if (!g_losant.connected()) {
+    g_connectivityLed.dim(0.9);
+    g_losant.connect();
   }
   else {
-    g_connectivityLed.on();
+    g_connectivityLed.unset();
   }
 
   if (!g_isFaceTransportInitialized && g_wifi.isConnected()) {

@@ -3,7 +3,7 @@
 
 #define LOSANT_TEMPERATURE_DBG(...) DBG(LosantTemperature, __VA_ARGS__)
 
-LosantTemperature::LosantTemperature(TemperatureReader& reader, LosantDevice& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval)
+LosantTemperature::LosantTemperature(TemperatureReader& reader, LosantDeviceAsync& device, const char* celsiusVar, const char* fahrenheitVar, int reportInterval)
   : m_reader(reader)
   , m_device(device)
   , m_celsiusVar(celsiusVar)
