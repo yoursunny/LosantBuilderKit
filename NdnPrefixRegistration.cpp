@@ -90,10 +90,16 @@ NdnPrefixRegistration::httpSend()
 {
   NDNPREFIXREG_DBG(F("Sending HTTP request ") << _DEC(m_step));
 
-  PString httpReq(m_httpHeader, sizeof(m_httpHeader));
-  httpReq << "GET " << m_httpUri << _DEC(m_step) << F(" HTTP/1.1\r\n\r\n");
+  PString queryString(m_httpHeader, sizeof(m_httpHeader));
+  queryString << "?i=" << _DEC(m_step);
 
-  m_tcp.add(httpReq, httpReq.length());
+  m_tcp.add("GET ", 4);
+  m_tcp.add(m_httpUri, strlen(m_httpUri));
+  m_tcp.add(queryString, queryString.length());
+  m_tcp.add(" HTTP/1.1\r\nHost: ", 17);
+  m_tcp.add(m_httpHost, strlen(m_httpHost));
+  m_tcp.add("\r\n\r\n", 4);
+
   m_state = State::HTTP_SENT;
   m_payloadLen = -1;
   m_hasMore = false;

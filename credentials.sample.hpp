@@ -27,6 +27,6 @@ char* NDN_INPING_PREFIX = "/example/user/temperature-sensor/ping"; // must be mu
 
 const char* NDNPREFIXREG_HTTPHOST = "example.com";
 const uint16_t NDNPREFIXREG_HTTPPORT = 8266;
-const char* NDNPREFIXREG_HTTPURI = "/ndn-prefix-reg.php?i=";
+const char* NDNPREFIXREG_HTTPURI = "/ndn-prefix-reg.php";
 
 #endif // CREDENTIALS_HPP
