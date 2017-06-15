@@ -84,10 +84,21 @@ handleLedCommand(LosantCommand* cmd)
 }
 
 void
+handleResetCommand(LosantCommand* cmd)
+{
+  Serial << F("Reset via Losant command\n");
+  delay(2000);
+  ESP.restart();
+}
+
+void
 handleLosantCommand(LosantCommand* cmd)
 {
   if (strcmp(cmd->name, "led") == 0) {
     handleLedCommand(cmd);
+  }
+  else if (strcmp(cmd->name, "reset") == 0) {
+    handleResetCommand(cmd);
   }
   else {
     Serial << F("Unknown command verb: ") << cmd->name << "\n";
