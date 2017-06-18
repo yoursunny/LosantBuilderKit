@@ -39,8 +39,8 @@ NdnPrefixRegistration::loop()
     return;
   }
 
-  if (m_state == State::NDN_SENT && millis() - m_lastRegister >= 4000) {
-    NDNPREFIXREG_DBG(F("NDN timeout"));
+  if (m_state != State::NONE && millis() - m_lastRegister >= 4000) {
+    NDNPREFIXREG_DBG(F("timeout"));
     m_state = State::FAIL;
   }
 
@@ -64,6 +64,7 @@ NdnPrefixRegistration::loop()
     if (m_hasMore) {
       ++m_step;
       m_state = State::HTTP_CONNECTING;
+      NDNPREFIXREG_DBG(F("Connecting to HTTP server ") << _DEC(m_step));
       m_tcp.connect(m_httpHost, m_httpPort);
     }
     else {
@@ -156,6 +157,9 @@ NdnPrefixRegistration::parseHttpHeader()
     if (m_payloadLen > 0) {
       NDNPREFIXREG_DBG(F("HTTP payload size ") << m_payloadLen);
       m_state = State::HTTP_RECV_PAYLOAD;
+      if (m_payload != nullptr) {
+        free(m_payload);
+      }
       m_payload = reinterpret_cast<uint8_t*>(malloc(m_payloadLen));
     }
     else {

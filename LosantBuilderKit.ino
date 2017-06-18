@@ -39,7 +39,7 @@ ndn::PingServer g_pingServer(g_face, g_inPingPrefix);
 static ndn_NameComponent g_outPingPrefixComps[8];
 static ndn::InterestLite g_outPingInterest(g_outPingPrefixComps, 8, nullptr, 0, nullptr, 0);
 ndn::PingClient g_pingClient(g_face, g_outPingInterest, 29696, 2000);
-NdnPrefixRegistration g_prefixReg(g_face, NDNPREFIXREG_HTTPHOST, NDNPREFIXREG_HTTPPORT, NDNPREFIXREG_HTTPURI, 305112, 62983);
+NdnPrefixRegistration g_prefixReg(g_face, NDNPREFIXREG_HTTPHOST, NDNPREFIXREG_HTTPPORT, NDNPREFIXREG_HTTPURI, 305112, 22983);
 
 void
 controlSingleLed(Led& led, JsonObject& cmdPayload, const char* objKey)
@@ -187,8 +187,10 @@ loop()
   g_button.loop();
   g_temperatureReader.loop();
   g_losantTemperature.loop();
+
   g_face.loop();
   g_pingClient.loop();
   g_prefixReg.loop();
+
   delay(10);
 }
